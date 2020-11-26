@@ -1,0 +1,7 @@
+#!/dis/sh.dis
+
+load std
+event=$1
+sys=$2
+echo o/newterm: $event $sys
+exit ''

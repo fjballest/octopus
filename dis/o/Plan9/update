@@ -1,0 +1,21 @@
+#!/dis/sh.dis -n
+
+# udpates the local terminal binaries if needed.
+ftest -e /n/pc/NOTICE || {
+	mount -c tcp!pc!styx /n/pc
+	bind -c /n/pc/registry /mnt/registry
+}
+cmp -s /dis/o/version /n/pc/dis/o/version || {
+	echo your octopus is out of date.
+	echo -n 'do I copy the new binaries?' [n] 
+	ans=`{read}
+	if { ~ $#ans 0 || ~ $ans n N no NO No }{
+		echo not copied
+	} {
+		echo copying /dis/o
+		cp /n/pc/dis/o/* /dis/o >[2] /dev/null
+		cp /n/pc/dis/o/MacOSX/* /dis/o/MacOSX
+		cp /n/pc/dis/o/Plan9/* /dis/o/Plan9
+	}
+}
+exit ''

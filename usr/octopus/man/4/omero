@@ -1,0 +1,611 @@
+.TH OMERO 4
+.SH NAME
+omero \- octopus window system
+.SH SYNOPSIS
+.B o/mero
+[
+.B -abcdi
+]
+[
+.B -m
+.I mnt
+]
+.SH DESCRIPTION
+.I  O/mero
+is the Octopus window system,
+as introduced in
+.IR olive (1).
+Here we describe the file system interface.
+.PP
+By default,
+.I o/mero
+mounts itself at
+.BR /mnt/ui .
+Flags
+.B -abc
+are similar to the
+.IR bind (2)
+flags of the same name. Option
+.B -m
+can be used to select
+.I mnt
+as the mount point instead of the default
+.BR /mnt/ui .
+Under flag
+.B -i
+the standard input is used as a connection to the client.
+.PP
+.I O/mero
+provides GUI components known as
+.IR panels ,
+like rows, columns, buttons, sliders, and others described below. Perhaps
+surprisingly,
+.I o/mero
+does not draw and does not interact with the mouse or keyboard.
+.I O/live
+is a viewer for
+.I o/mero
+that does it, as said in
+.IR olive  (1).
+.PP
+The root directory contains a directory named
+.B appl
+where applications create their panel hierarchies, one extra
+directory per screen or session, and a file named
+.B olive
+used by the viewer to receive updates from the window system and to send
+requests to it.
+.PP
+Each panel is represented by a directory that contains some files, the most
+important are files named
+.BR ctl ,
+and a
+.BR data .
+Panels can be created and deleted by making and removing such directories.
+Rows and columns have one extra subdirectory for each one of
+the panels they contain, and do not contain a
+.B data
+file.
+The file system can be used to move, copy (i.e. replicate), and delete panels.
+The applications affected are usually unaware of this fact.
+.PP
+The name of a directory determines the type of panel it represents. A name is of the form
+.I type:name
+(eg.
+.BR text:ox.3442 ).
+Usually,
+.I name
+is a string randomized by the application to permit any two names to
+cohexist within the same directory (i.e., within the same container panel).
+.I Type
+is any of the following:
+.TF image
+.TP
+.B row
+A container panel arranging children in a row.
+.TP
+.B col
+A container panel arranging children in a table.
+.TP
+.B image
+An image in Plan 9 format.
+.TP
+.B text
+An editable text panel.
+.TP
+.B tbl
+An editable text panel that insists on tabulating the words contained.
+.TP
+.B label
+A single line (small) read-only text panel.
+.TP
+.B button
+A single line (small) read-only text panel customized to behave as a button.
+.TP
+.B tag
+A single line editable text panel. Usually to inform the user of sibling panels and
+to provide a place to type some text.
+.TP
+.B gauge
+A meter to show a value between 0 and 100.
+.TP
+.B slider
+An editable meter to show a value between 0 and 100 and let the user adjust it.
+.TP
+.B page
+An image in  Plan 9 format supporting paning. To view large images.
+.TP
+.B draw
+A vector graphics device. Used to draw geometrical figures.
+.PD
+.PP
+.I O/mero
+(or rather,
+.IR o/live )
+uses the file
+.B /dev/snarf
+as the clipboard, to put there the bytes when a cut operation snarfs them.
+The file
+.B /mnt/snarf/sel
+is updated
+with the file system path for the last
+.B text
+panel where some text was selected. This does not consider tag lines and
+is a convenience for executing commands that operate on selected text.
+.SS Panel Files
+Panel directories contain a
+.B data
+and a
+.B ctl
+file. The
+.B data
+file contains a portable representation of the graphical
+panel, text for most panels and Plan 9 images for images. The
+.B ctl
+file
+contains a textual representation of the panel attributes. Some attributes
+are common to all panels and are described together later. The textual
+representation for an attribute may be issued as a control request by
+writing it to the control file of a panel. Each control request is terminated by
+a newline character.
+.PP
+Both files are complete descriptions (i.e. they are not streams), which means that
+tools like
+.IR tar (1)
+can be used to take a snapshot of a hierarchy of panels.
+.PP
+Applications are expected to read, write, create, and remove panel files
+using the
+.B /mnt/ui/appl
+file tree. Panels found there are not shown by default at any screen. Instead,
+a panel can be replicated at other places under
+.B /mnt/ui
+by issuing control requests. A panel replicated at a directory
+.BI /mnt/ui/ dir
+has a mirror of its file tree at that directory. Operations made to the files
+at
+.B /mnt/ui/appl
+affect all the replicas (the panel itself). Operations made to the files at
+.BI /mnt/ui/ dir
+(ususally done by viewers) are made to that replica. Most of the operations
+also update the panel (and any other replicas), but some (eg., hidding the
+panel) do not.
+.SS Attributes and control requests
+These are both attributes and control requests common to all panels.
+Depending on the panel type, additional attributes and/or control requests may exist
+as described later.
+.TF "appl id pid
+.TP
+.B "tag
+Activates a tag for the panel.
+This permits using the mouse and keyboard commands described in
+.IR olive (1)
+for tags.
+.TP
+.B "notag
+Ceactivates it.
+.TP
+.B "hide
+Hides the panel,
+.TP
+.B show
+Makes a hidden panel visible.
+.TP
+.BI appl " id pid
+Sets the panel as an application panel, identified by
+.I id
+(reported back along with events for the panel), handled
+by the process with the given
+.IR pid .
+If a
+.I pid
+is set to
+.B -1
+the panel is not associated to any process. Otherwise,
+an interrupt request causes
+.I o/mero
+to try to interrupt that process.
+.TP
+.B layout
+The counterpart of
+.BR appl .
+It flags the panel as one used just for layout purposes.
+.TP
+.BI copyto " dir" [ pos ]
+Informs of a replica of the panel (or establishes a new one when issued
+as a control request). The destination
+.I dir
+should be an absolute path starting from the
+.I o/mero
+root directory (eg.
+.BR /mnt/ui )
+and showing where to ``copy'' the panel.
+The optional
+.I pos
+argument  is a number indicating the position for the panel in the
+target container (
+.L 1
+for the first,
+.L 2
+for the second, etc.)
+.PD
+.PP
+The following control requests may be issued but do not correspond to
+panel attributes:
+.TP
+.BI moveto " dir" [ pos ]
+Is similar to
+.B copyto
+but it is meant only as a control request at a replica. It relocates
+the replica to a different path. It is equivalent of a
+.B copyto
+request followed by a close request for the original replica.
+.TP
+.B top
+Makes the panel full-screen (by zooming to it).
+.TP
+.BI pos " n
+Sets the position of the panel to
+.I n
+in its container.
+.TP
+.B hold
+Prevents
+.I o/mero
+from sending events notifying of changes to the panel (and its children)
+until the moment when the control file is closed or the next request is issued.
+.TP
+.B release
+Makes
+.I o/mero
+release the hold on the panel (and inner ones).
+.TP
+.BI look " what
+Causes the panel to post an event to the application to look for
+.IR  what .
+The argument  is terminated by a
+newline character. It may be more than a single line of text, and the
+convention is to replace ew lines within the argument with the SOH character
+(ASCII
+.LR 1 ).
+.TP
+.BI exec  " cmd
+Causes the panel to post an event to the application to execute
+.IR  cmd .
+The argument is handled as in
+.B look
+regarding newline characters.
+.PD
+.PP
+By default, container panels have the attributes
+.BR tag ,
+.BR show ,
+and
+.BR "appl 0 -1" ;
+and all other panels have the attributes
+.BR notag ,
+.BR show ,
+and
+.BR "appl 0 -1" .
+.SS Panels
+What follows documents
+the list of panels along with the format of their data files and their specific
+control requests.
+.PP
+.I Row
+and
+.I col
+are the two container panels. They contain the
+.B order
+ attribute (also a control request). Its arguments are the names for the
+panels contained in the container. The order of the arguments corresponds
+to the order of the panels on the viewer. New panels created inside the container
+are added to the end of this attribute.
+.PP
+.I Image
+panels
+hold Plan 9 images as data. The size of the panel is that of the image. Its
+.B ctl
+file contains
+.EX
+	size nx ny
+.EE
+besides other attributes, to report the size of the image measured in pixels.
+.PP
+.I Page
+is like
+.I image
+but grows depending on available space and allows mouse
+interaction to see images bigger than the space available.
+.PP
+.I Text
+is a text panel that permits edition. The content of the
+.B data
+file is the text being edited. See
+.IR olive (1),
+for a description of the user interaction for this panel.
+The following attributes and control requests are specific of text panels:
+.TF "sel nm
+.TP
+.B dirty
+Flags the panel to indicate edits not sent to the application  (i.e., unsaved
+changes).
+.TP
+.B clean
+The opposite of
+.BR dirty .
+.TP
+.BI sel " n m
+Indicates (or sets) the selection to include runes from the
+.IR n -th
+to the
+.IR m -th.
+When both values are the same the selection is null and corresponds to the
+insertion point for the panel.
+.TP
+.BI font " F
+Sets the font for the panel to
+.BR F .
+Where
+.I F
+may be any of
+.BR B ,
+.BR I ,
+.BR L ,
+.BR R
+.BR S
+and
+.B T
+(bold, italics, large, roman, small, and fixed-width).
+.TP
+.BI tab " wid
+Sets the tab width to
+.IR  wid .
+.TP
+.B usel
+permits the panel to update
+.B /mnt/snarf/sel
+to record the path of the panel with the last selection. This is the default
+(but note that none of tags, tables, buttons or labes update that file).
+.TP
+.B nousel
+prevents the panel from updating the last selection file.
+.TP
+.B scroll
+puts the panel in scroll mode (the frame shows the last text added and
+it keeps at most 16Kbytes of text).
+.TP
+.B noscroll
+puts the panel in no-scroll mode (the default, keeping all the text
+placed in the panel and preserving the position shown by the frame
+despite appends of new text).
+.TP
+.B temp
+prevents the panel from becoming dirty. The panel is considered as
+scratch space.
+.PD
+.PP
+The following requests are understood for text panels but are not
+attributes:
+.TF "sel nm
+.TP
+.BI ins  " tag vers pos text
+Inserts
+.I text
+at position
+.I pos
+in the panel, but only the the
+.B  Qid.vers
+for the
+.B data
+file matches
+.IR vers .
+.I Tag
+is a user chosen identifier sent along with any insert event resulting
+from the control request (so that the sender may identify the
+operation as its own one).
+.TP
+.BI del " tag vers pos n
+Deletes
+.I n
+runes starting at position
+.I pos
+in the text.
+.IR  Tag
+and
+.IR vers
+are similar to those of the
+.B ins
+request.
+.PP
+.IR Tbl ,
+.IR  label ,
+.IR  tag ,
+and
+.I button
+panels are similar to
+.IR  text .
+.PP
+.I Gauge
+and
+.I slider
+contain in their
+.B data
+files a numeric value between 0 and 100 corresponding to a graphical representation
+of a gauge.
+.PP
+.I Draw
+is a graphical panel for vector graphics. The
+.B data
+file contains a textual representation of drawing commands (one per line).
+The following commands are understood:
+.TP 
+.BI ellipse " cx cy rx ry"  [ "w col" ]
+Draws a ellipse with center
+.RI  ( cx , cy  )
+and
+.I rx
+and
+.I ry
+as radiuses. The width of the line is
+.I w
+and the color
+is
+.I col
+(which is a string naming a color; most of the
+typical ones are available. See the implementation for a full list.)
+.TP
+.BI ellipse " cx cy rx ry"  [ "col" ]
+is similar but draws a filled ellipse.
+.TP
+.BI  line " ax ay bx by" [ "ea eb r col" ]
+draws a line from
+.RI  ( ax , ay )
+to
+.RI  ( bx , by ).
+Arguments
+.I ea
+and
+.I eb
+are small integers that
+select a line ending at the former and the latter point.
+The width of the line is given by
+.I r
+and
+.I col
+selects the color for the line.
+.TP
+.BI rect " ax ay bx by" [ col ]
+Draws a rectangle with opposite corners at
+.RI  ( ax , ay )
+and
+.RI  ( bx , by ).
+.I Col
+selects the color for the lines.
+.TP
+.BI poly " x0 y0 x1 y1" ... "xn yn e0 en w col
+draws a polygon. Arguments indicate the points,
+.I E0
+and
+.I en
+indicate endings,
+.I w
+the line width and
+.I col
+the color.
+.TP
+.BI bezspline " x0 y0 x1 y1" ... "xn yn e0 en w col
+is similar but draws a spline curve.
+.TP
+.BI fillpoly " x0 y0 x1 y1" ... "xn yn w col
+is like
+.B poly
+but fills the polygon.
+.TP
+.BI fillbezspline " x0 y0 x1 y1" ... "xn yn w col
+is like
+.B bezspline
+but fills the region delimited by the spline.
+.SS Events
+Events are sent using
+.IR ports (4).
+All events are terminated on a newline character (not considered
+part of the event data). By convention, newlines part of the event data
+are escaped by replacing them with ASCII
+.LR 01 .
+All events start with the string
+.LR omero: ,
+followed by the panel
+.I id
+(as set using the
+.B appl
+control request) and the panel path (eg.
+.BR /appl/draw:clock ).
+.PP
+The following events are sent from
+.I o/mero
+to the application, in response to user interaction or to operations on
+the file system.
+.IP
+.B o/mero:
+.I id
+.I path
+.B look
+.I arg
+.br
+.B o/mero:
+.I id
+.I path
+.B exec
+.I arg
+.br
+.B o/mero:
+.I id
+.I path
+.B close
+.br
+.B o/mero:
+.I id
+.I path
+.B click
+.I buttons
+.I x
+.I y
+.I time
+.br
+.B o/mero:
+.I id
+.I path
+.B keys
+.I str
+.br
+.B o/mero:
+.I id
+.I path
+.B interrupt
+.br
+.B o/mero:
+.I id
+.I path
+.B clean
+.br
+.B o/mero:
+.I id
+.I path
+.B dirty
+.PP
+.B Look
+and
+.B exec
+notify that the user is looking for
+.I arg
+or tries to execute
+.IR arg .
+.B Close
+notifies that a panel is no longer being viewed. This event is posted
+when the last replica is closed (also when the panel files at
+.B /appl
+are removed).
+.PP
+.B Click
+and
+.B keys
+report mouse and keyboard activity. This is only done for vector graphics
+panels. Keyboard is also reported for non-editable text panels.
+.PP
+.B Interrupt
+notifies the application that the user wants to inerrupt it.
+.PP
+.B Clean
+and
+.B dirty
+report that panel does not have  (or does) unsaved changes.
+.SH SOURCE
+.B /usr/octopus/port/live
+.br
+.B /usr/octopus/port/mero
+.SH SEE ALSO
+.IR panels (2),
+.IR olive (1),
+and
+.IR ox (1).

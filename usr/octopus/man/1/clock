@@ -1,0 +1,14 @@
+.TH CLOCK 1
+.SH NAME
+clock \- analog omero clock
+.SH SYNOPSIS
+.B o/clock
+.SH DESCRIPTION
+.I Clock
+is an analog clock for
+.IR omero (4).
+.SH SOURCE
+.B /usr/octopus/port/clock.b
+.SH SEE ALSO
+.IR olive (1),
+.IR omero (4).

@@ -1,0 +1,31 @@
+#!/bin/rc
+rfork ne
+path=(/bin .)
+cd /
+
+FILES=(	sys/src/cmd/o\
+	sys/src/libpanel\
+	sys/src/libb\
+	/sys/src/cmd/mousefs.c\
+	/sys/src/cmd/kbdfs.c\
+	sys/include/b.h\
+	sys/include/panel.h\
+	sys/include/error.h\
+	sys/man/2/readf\
+	sys/man/2/panel\
+	sys/man/1/oclock\
+	sys/man/1/ostats\
+	sys/man/1/oplayer\
+	sys/man/2/error\
+	sys/man/4/mousefs\
+	sys/src/liberror\
+	rc/bin/oxopen\
+)
+tar cv $FILES | gzip -c > /usr/web/export/9octopus.tgz
+ls -l /usr/web/export/9octopus.tgz
+rm /srv/*sources*
+rm /srv/*sources*
+srv tcp!sources.cs.bell-labs.com
+mount -c /srv/tcp!sources.cs.bell-labs.com /n/sources
+cp /usr/web/export/9octopus.tgz /n/sources/contrib/nemo/octopus
+

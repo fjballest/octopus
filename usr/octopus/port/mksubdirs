@@ -1,0 +1,12 @@
+all:V:	all-subdir
+install:V: install-subdir
+uninstall:V: uninstall-subdir
+nuke:V: nuke-subdir
+clean:V: clean-subdir
+
+%-subdir:V:
+	for j in $DIRS {
+		 cd $j; mk $MKFLAGS $stem
+	}
+
+

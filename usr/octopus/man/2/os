@@ -1,0 +1,66 @@
+.TH OS 2
+.SH NAME
+Os \- helper module for interfacing with the host OS
+.SH SYNOPSIS
+.EX
+include "os.m";
+os := load Os Os->PATH;
+
+init:	fn();
+filename:	fn(name: string): string;
+run:	fn(cmd: string, dir: string): (string, string);
+
+Cmdio: adt {
+	ifd:	ref Sys->FD;	# stdin
+	ofd:	ref Sys->FD;	# stdout
+	efd:	ref Sys->FD;	# stderr
+	wfd:	ref Sys->FD;	# wait
+	cfd:	ref Sys->FD;	# ctl
+};
+frun:	fn(cmd: string, dir: string): (ref Cmdio, string);
+emuhost:	string;
+emuroot:	string;
+.EE
+.SH DESCRIPTION
+.I Os
+provides operations common in most servers that export resources from the host
+OS. The module must be initialized by calling
+.I init
+before using any of its other facilities.
+.PP
+.I Filename
+returns a string for the file named
+.I name
+in a format understood by the underlying system. In particular, it takes care of
+adding the value of
+.B $emuhost
+as a prefix to the file name given. It is useful to execute host commands that refer to
+files known to us, but kept in the host file system.
+.PP
+.I Run
+executes
+.I cmd
+in the host system shell using
+.I dir
+as current directory and returns a tuple with the command output and
+an error string. The parameter
+.I dir
+may be nil, in which case the current directory is not changed for the command.
+.PP
+.I Frun
+provides is similar to
+.I run
+but returns file descriptors to let the caller stream input, output, errors,
+recover the process wait status, and issue control requests to the process.
+Upon errors
+.I frun
+returns a non-null error string and a null reference to a descriptor set.
+.PP
+.I Emuhost
+and
+.I Emuroot
+keep the value of the respective environment variables.
+.SH SOURCE
+.B /usr/octopus/port/lib/os.b
+.SH SEE ALSO
+.IR cmd (3).

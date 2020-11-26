@@ -1,0 +1,233 @@
+.TH GET O 
+.SH NAME
+get \- retrieve a file
+.SH SYNOPSIS
+.ta \w'\fLTauth 'u
+.IR size [4]
+.B Tget
+.IR tag [2]
+.IR path [ s ]
+.IR fd [2]
+.IR mode [2]
+.IR nmsgs [2]
+.IR offset [8]
+.IR count [4]
+.br
+.IR size [4]
+.B Rget
+.IR tag [2]
+.IR fd [2]
+.IR mode [2]
+.IR stat [ n ]
+.IR count [4]
+.IR data [ count ]
+.SH DESCRIPTION
+.PP
+The
+.B get
+message asks the server to retrieve data and/or metadata for the file identified by
+.IR path
+or
+.IR fd .
+The former specifies a file name as said in
+.IR intro (O)
+and the latter is a small integer that acts as a
+.I "file descriptor"
+established by the server for further requests, as explained also in
+.IR intro (O)
+and discussed below.
+.PP
+The field
+.B mode
+must be the result of a bit-or of any of
+.BR ODATA ,
+.BR OSTAT ,
+and
+.BR OMORE .
+.PP
+A
+Tget request
+with
+.B OSTAT
+set in the
+.B mode
+field asks the server to return file 
+metadata in the reply, in the
+.B stat
+field, which
+uses the format used in Styx. In this case, the reply will have the
+.B OSTAT
+bit set in the
+.B mode
+field as well, to indicate that a 
+.B stat
+field is being sent back to the client.
+When
+.B OSTAT
+is not set in the request, the reply does not include
+.BR stat ,
+and therefore does not have the
+.B OSTAT
+bit set.
+.PP
+A
+T-get message
+with the
+.B ODATA
+bit set asks the server to return file data, starting in the file at position
+.IR offset ,
+and retrieving a maximum of
+.IR count ,
+bytes of data per message.
+In this case, a reply message includes the actual number of bytes retrieved, reported
+in
+.BR count ,
+and the actual
+.BR data .
+If
+.B OSTAT
+was also set in the request, the reply includes both the
+.B stat
+field and the retrieved data, as said above.
+All replies include
+.BR count ,
+even those using just
+.B OSTAT
+as
+.IR mode .
+.PP
+If the client expects further get requests for the same file, it may set the
+.B OMORE
+bit in
+.IR mode .
+For directories,
+.B OMORE
+is implicit in all requests.
+In this case, the server allocates a file descriptor as said in
+.IR intro (O)
+and returns its number  in the
+.B fd
+field of the reply. Further gets mentioning
+.B fd
+will refer to the same file. If the connection is lost, or the server restarts,
+.B fd
+may become an invalid file descriptor. In this case, the server must use
+.B path
+to establish a new file descriptor and return its number in the
+.B fd
+field of the reply message, instead of including old one. The special value
+.B NOFD
+(~0)
+is used to represent a null (clear) descriptor.
+.PP
+A request without the
+.B OMORE
+bit set clears the descriptor mentioned in the request. It is not an error to mention an invalid
+descriptor in the request, e.g.,
+.BR NOFD .
+.PP
+In the reply, the bit
+.B OMORE
+of the
+.B mode
+field is used to indicate is there is more data in the file following the data already retrived by the RPC. The bit is
+clear to signal an end of file.
+A reply carrying an end of file indication clears the
+descriptor as well. In this case,
+.B NOFD
+is reported as the
+.I fd
+in the reply. 
+.PP
+A request must also specify a maximum number of reply messages to be sent
+in response,
+.BR nmsgs .
+To obtain just one reply it must be set to
+.BR 1 .
+Value zero means infinite, and is implied for directories.
+The server will reply with up to
+.BR nmsgs
+(each one with up to
+.B count
+data bytes). Such messages must have the
+same tag used in the request. They return
+data in sequence, starting at the
+.B offset
+specified by the request, in order.
+.PP
+If both
+.B OSTAT
+and
+.B ODATA
+where set in the request, file metadata will be included only in the first
+reply message. The last reply from the server for this transaction will
+happen when
+.B nmsgs
+reply
+messages have been sent, or when there is no more data to retrieve
+from the file (whatever happens first). Different replies must be delivered
+in order to the client, and this requires a transport protocol (eg. TCP)
+respecting the order of messages sent.
+.PP
+For directories, and for requests with zero in
+.BR nmsgs ,
+the entire file will be sent in reply messages, no matter how many
+reply messages are necessary.
+This is necessary for reading directories
+without race conditions while other clients modify them. The server may
+buffer a copy of all the directory entries while sending the sequence of replies.
+.PP
+For directories, an integral number of directory entries (per message)
+are returning, using the same
+format used by STYX (that is,
+.B stat
+fields). 
+.PP
+The number of data bytes requested in a single
+.B get
+transaction must not exceed
+.B MAXDATA
+bytes, as defined in
+.BR op.m .
+.PP
+Upon errors, an
+.B Rerror
+reply is sent to the client reporting the cause for the error.
+Such message terminates the transaction (even if multiple replies where
+asked for). Furthermore, errors clear the descriptor used in the request.
+Further requests will use
+.I path
+to set up a new descriptor.
+.SH ENTRY POINTS
+A
+.B get
+transaction may (note: not will) be generated from
+.BR Twalk ,
+.BR Tstat ,
+.BR Topen ,
+.BR Tread ,
+and
+.BR Tclunk
+Styx requests.
+This happens when the user makes calls to
+.IR open (2),
+.IR stat (2),
+and
+.IR read (2).
+In some cases, a single
+.B get
+may serve an entire read-only session for a file. In other cases, several ones will be
+required. The server described in
+.IR ofs (4)
+tries to use a single
+.I Op
+descriptor for an entire Styx session using the same fid. However, if several fids
+are being used for reading the same file, a clunk of one of them would release the
+descriptor and a new one will be established to continue the session for the other fid. Also,
+if the file is also written, a different
+.I Op
+descriptor will be used for Put requests, even though the Styx fid might be the same.
+.SH SEE ALSO
+.IR intro (O)
+and
+.IR put (O).

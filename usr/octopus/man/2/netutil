@@ -1,0 +1,55 @@
+.TH NETUTIL 2
+.SH NAME
+Netutil, netmkaddr, authfd \- Network utility functions
+.SH SYNOPSIS
+.EX
+include "netutil.m";
+util := load Netutil Netutil->PATH;
+
+Client, Server: con iota;
+
+netmkaddr: fn(addr, net, svc: string): string;
+authfd:	fn(fd: ref Sys->FD, role: int, alg, kfile, addr: string):
+		(ref Sys->FD, string);
+.EE
+.SH DESCRIPTION
+.I Netutil
+provides functions used in many programs providing or using network
+services.
+.PP
+.I Netmkaddr
+is similar to the Plan 9 function of the same name. It builds a network address given
+a default network to use,
+.I net ,
+and a default service name,
+.I svc .
+.PP
+.I Authfd
+performs
+.B Client
+or
+.B Server
+authentication (according to the
+.I role
+indicated) on the
+.I fd
+given. The
+.IR alg ,
+.IR kfile ,
+and
+.I addr
+parameters
+may be left as
+.B nil
+if desired. They correspond to the algorithm used, the keyfile
+used, and the address to authentify for. The function returns
+a file descriptor (perhaps encrypted using
+.IR alg ),
+and a string with authentication information. Upon error,
+the system error string is updated and a null descriptor
+returned.
+.SH SOURCE
+.B /usr/octopus/port/lib/netutil.b
+.SH SEE ALSO
+.IR security-auth (2),
+.IR dial (2).

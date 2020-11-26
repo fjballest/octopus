@@ -1,0 +1,19 @@
+.TH REBOOT 1
+.SH NAME
+reboot \- reboot terminal after connection loss
+.SH SYNOPSIS
+.B o/reboot
+.SH DESCRIPTION
+.I Reboot
+polls the file
+.B /mnt/registry/index
+for existence and reboots the terminal software (i.e., kills
+Inferno on hosted systems) upon errors. That file comes from
+the PC and must be available as long as the terminal is connected
+to the PC.
+.PP
+This can be used by a native program to restart the terminal software if the connection
+to the PC is lost, by waiting and trying again to start an Octopus terminal
+if it dies.
+.SH SOURCE
+.B /usr/octopus/port/reboot.b

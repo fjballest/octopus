@@ -1,0 +1,275 @@
+.TH COPYSERVER 1
+.SH NAME
+copyserver \- file copying between a source and a destination
+.SH SYNOPSIS
+.B copyserver
+[
+.B \-d
+]
+.I mntdir
+.SH DESCRIPTION
+.I copyserver
+starts a 
+.IR styxservers (2) 
+server and mounts it at
+.I mntdir
+(replacing the old
+binding, if any).
+Once done, the server is ready to
+accept copy requests. Unmounting
+.I mntdir
+will cleanly shutdown the server.
+.PP
+Copy requests are written into the 
+(virtual) control file of the server, 
+named
+.I ctl
+, using the following format:
+.PP
+.EX
+     copy
+         [srcmntopt] srcfname srcoff
+         [dstmntopt] dstfname dstoff
+         nofbytes iounit delay ctlfile
+.EE
+.PP
+If the source and destination files are 
+successfully opened, the copy commences. 
+The write operation on the server control 
+file blocks until the copy terminates,
+or it is killed (discussed in the sequel), 
+or an r/w error occurs.
+Also, a copy is aborted if the process 
+that writes the request to
+the server control file is killed
+(this is detected by the server
+via the receipt of a 
+.IR flush (5)
+message for the write operation).
+.PP
+Here is a brief explanation of the
+copy request arguments:
+.PP
+.I srcfname 
+and
+.I dstfname
+specify the source and destination file name,
+relative to the root of the source and destination
+file system, respectively. 
+.I srcfname 
+must point to an existing file.
+If
+.I dstfname
+points to an existing file, this will be
+truncated and overwritten, else a new file
+will be created.
+.PP
+.I srcoff
+and
+.I dstoff
+specify the offset from which to start reading the 
+source and writing the destination file, respectively. 
+These values must be equal or greater than zero.
+The file position is adjusted based on the rules
+for 
+.IR sys-seek (2)
+(using 
+.B Sys->SEEKSTART
+).
+.PP
+.I nofbytes
+specifies the number of bytes to copy from 
+the source to the destination file. The copy 
+operation will terminate in case the 
+end of the source file is reached earlier. 
+If 
+.I nofbytes
+is zero, the copy will not terminate unless
+the end of the source file is reached. If the 
+source points to the reading end of an endless 
+stream, the copy will run "for ever", until 
+it is aborted or killed.  
+.PP
+.I iounit
+specifies the size of the data buffer used to
+read bytes from the source file and write them 
+to the destination file.
+.PP
+.I delay
+specifies the number of milliseconds to wait
+between two successive r/w operations. Combined
+with a small 
+.I iounit
+value (e.g. 1 byte), this makes it possible
+to test the copy server in an interactive
+fashion and using small files. 
+If 
+.I delay
+is zero, the copy will be performed at 
+full speed.
+.PP
+For both the source and destination,
+an option, 
+.I srcmntopt
+and
+.I dstmntopt
+, respectively, can be used to specify whether
+the corresponding file systems need to be
+mounted, and how this should be achieved.
+The mount option has the following format:
+.IP
+.B "(\-s[A] | \-o[A]) addr"
+.PP
+Option 
+.B \-s 
+is specifies a conventional mount via
+.IR styx (2)
+, and option
+.B \-o 
+specifies a mount via 
+.IR ofs (4)
+to a remote 
+.IR oxport (4)
+server. In both cases, the 
+.B \-A
+option is used to turn authentication off.
+.I addr
+specifies the address to be dialed.
+If no mount option is used, the server
+interprets the filename relative to its
+local name space (no mount is done).
+.PP
+For each ongoing copy, the server
+"creates" a (virtual) control file, 
+using the
+.I ctlfname
+that was supplied in the request. 
+The server "removes" the control file 
+when the copy terminates (or is aborted or is killed).
+.PP
+Reading the copy control file returns the 
+number of bytes copied so far as a string value. 
+Writing the string value "kill" in the file 
+kills the copy (the server will notify the 
+blocked process that issued the copy request 
+via an
+.IR error (5)
+message).
+
+.PP
+
+
+.SH EXAMPLE
+To mount a copy server on /cpsrv with debugging output enabled:
+.IP
+.B "./copyserver \-d /cpsrv"
+.PP
+To (background) copy file 
+.B /d1/f1 
+exported by an oxport file server 
+which does not require authentication
+and listens on 
+.B tcp!127.0.0.1!4242
+, to file 
+.B /d2/f2
+in the file system of the copy server, 
+using a r/w buffer of 512 bytes, 
+with an artificial delay of 50 ms
+between each r/w operation, and 
+.B cp1
+being the name of the copy control file:
+.PP
+.EX
+     echo copy -oA tcp!127.0.0.1!4242 /d1/f1 0 
+                                      /d2/f2 0
+               0 512 50 cp1 > /cpsrv/ctl &
+.EE
+.PP
+Or to (background) copy file 
+.B /d1/f1 
+exported by a styx file server 
+which does not require authentication
+and listens on 
+.B tcp!127.0.0.1!4243
+, to file 
+.B /d2/f2
+in the file system exported by
+the same oxport server as above, 
+using the same request settings:
+.PP
+.EX
+     echo copy -sA tcp!127.0.0.1!4243 /d1/f1 0 
+               -oA tcp!127.0.0.1!4242 /d2/f2 0
+               0 512 50 cp1 > /cpsrv/ctl &
+.EE
+.PP
+To check the progress of the copy:
+.IP
+.B "cat /cpsrv/cp1"
+.PP
+To abort the copy, one may kill the process 
+that issued the request (and remains blocked 
+waiting for the write operation to return). 
+Alternatively, one may use the corresponding
+control file to kill the copy (this will
+also unblock the background process):
+.IP
+.B "echo kill > /cpsrv/cp1"
+.PP
+Finally, to unmount the copy server:
+.IP
+.B "unmount /cpsrv"
+.PP
+Note that the copy server will shutdown
+when all processes have unmounted it
+from their name space.
+
+.SH SOURCE
+.B /usr/octopus/varia/copyserver.b
+
+.SH SEE ALSO
+.IR styx (2)
+,
+.IR mount (2)
+,
+.IR ofs (4)
+,
+and
+.IR oxport (4)
+\.
+
+.SH BUGS
+There is no access control for the 
+copy control files "created" by the
+server. Any process can read and write 
+every copy control file (e.g. kill 
+any ongoing copy, if it so desires).
+Also, the ownership and access rights
+of the destination files created as
+a side effect of a copy are not properly set.
+.PP
+There is a subtle race condition when
+reading the copy control file, which 
+may result in occasionally delivering 
+a wrong value for the number of bytes 
+that have been copied so far. 
+The probability for this is (very) small.
+.PP
+For simplicity, dialing and mounting 
+(and unmounting) file systems is currently 
+done via shell commands (instead of a direct 
+invocation of the corresponding primitives). 
+This means that changes in the command syntax 
+will "brake" the copyserver code. Also, 
+the failure of a shell command is inferred 
+indirectly, by checking whether any output
+was written on standard error.
+.PP
+Killing/aborting a copy is asynchronous, 
+i.e. it may be performed with a (small) delay, 
+after having sent the corresponding reply 
+message to the entity that triggered 
+this action. 
+
+
+

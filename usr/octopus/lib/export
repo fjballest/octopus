@@ -1,0 +1,67 @@
+#!/bin/rc
+rfork ne
+ramfs
+path=(/bin .)
+cd /usr/octopus
+if(~ $1 *m* ) {
+	cd man
+	mk man.pdf
+	cd ..
+}
+if(~ $1 *9* ) {
+	/usr/octopus/lib/9export
+}
+mkdir -p /tmp/empty /tmp/doc
+mkdir -p /tmp/usr /tmp/usr/octopus /tmp/usr/inferno
+bind /tmp/empty /usr/inferno/keydb
+bind /tmp/empty /usr/inferno/pc/what
+bind /tmp/empty /usr/inferno/pc/who
+bind /tmp/empty /usr/inferno/term
+bind /tmp/empty /usr/inferno/Plan9/386/_bug
+
+cp /usr/octopus/doc/^(gpc/gpc.pdf op/op.pdf om/om.pdf tut/tut.pdf) /tmp/doc
+cp /usr/octopus/doc/tut/tut.pdf /usr/web/export/otut.pdf
+bind /tmp/doc /usr/octopus/doc
+bind /tmp/empty /usr/octopus/caribe
+bind /tmp/empty /usr/octopus/port/ofs/testing
+bind /tmp/empty /usr/octopus/port/nope
+bind /tmp/empty /usr/octopus/lib/src
+bind /usr/octopus /tmp/usr/octopus
+bind /usr/inferno/usr/inferno /tmp/usr/inferno
+bind /tmp/usr /usr/inferno/usr
+bind /usr/octopus/lib/ndb /usr/inferno/lib/ndb
+cd /usr/inferno
+9fs src || { echo no src ; exit src }
+echo '2nd edition.' `{date} >/usr/octopus/VERSION
+cp /usr/octopus/README.O* /usr/octopus/INSTALL.O* .
+cp /usr/octopus/NOTICE NOTICE.Octopus
+echo doing zip
+zip -f /n/src/octopus/o.zip .
+echo doing iso
+rm -f /n/src/octopus/o.iso*
+disk/mk9660 -9cj -v octopus -p <{echo +} -s . /n/src/octopus/o.iso
+echo compressing iso
+@{ cd /n/src/octopus ; gzip o.iso }
+echo doing octopus src
+/386/bin/tar zc dis/o usr/octopus README.O* INSTALL.O* NOTICE.O* >/n/src/octopus/osrc.tgz
+zip -f /n/src/octopus/osrc.zip dis/o usr/octopus README.O* INSTALL.O* NOTICE.O*
+rm README.O* INSTALL.O* NOTICE.Octopus
+echo updating web
+cp /n/src/octopus/o.iso.gz /n/src/octopus/o.zip /n/src/octopus/osrc.tgz /n/src/octopus/osrc.zip /usr/web/export/
+cp /usr/octopus/README.Octopus /usr/web/export/README.Octopus
+cp /usr/octopus/INSTALL.Octopus /usr/web/export/INSTALL.Octopus
+cp /usr/octopus/README.Omero /usr/web/export
+cp /usr/octopus/README.Op /usr/web/export
+cp /usr/octopus/man/man.pdf /usr/web/export/oman.pdf
+chmod +t /usr/web/export/o.iso.gz /usr/web/export/osrc.tgz /usr/web/export/o.zip /usr/web/export/osrc.zip
+chmod +t /n/src/octopus/*.tgz /n/src/octopus/*.iso* /n/src/octopus/*.zip
+ls -lT /usr/web/export/o.iso.gz /usr/web/export/o.zip /usr/web/export/osrc.tgz /usr/web/export/osrc.zip
+echo updating sources
+rm /srv/*sources*
+srv tcp!sources.cs.bell-labs.com
+mount -c /srv/tcp!sources.cs.bell-labs.com /n/sources
+cp /usr/web/export/osrc.tgz /n/sources/contrib/nemo/octopus/octopus.tgz
+cp /usr/web/export/README.Octopus /usr/web/export/INSTALL.Octopus /n/sources/contrib/nemo/octopus/
+cp /usr/web/export/README.Op /usr/web/export/README.Omero /n/sources/contrib/nemo/octopus/
+echo remember to chmod -t /usr/web/export/o'*'.tgz once
+echo you know they are working. At least for a single time.

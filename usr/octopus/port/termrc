@@ -1,0 +1,92 @@
+#!/dis/sh.dis -n
+
+# Start script for octopus terminal
+
+load std
+
+if { ~ $#sysname 0 } {
+	sysname=`{cat /dev/sysname}
+}
+user=`{cat /dev/user}
+home=/usr/$user
+log=/n/log/octopus
+bind -a '#C' /
+ftest -e /dis/o/mvoice.dis || { 
+	bind -c /dis/o /dis/o
+	bind -ac /dis/o/$emuhost /dis/o
+}
+
+if { ~ $#location 0 } {
+	echo -n 'location? [home] '
+	location=`{read}
+}
+if { ~ $#location 0 } {
+	location=home
+}
+while { ~ $#PC 0 } {
+	echo -n 'PC? '
+	PC=`{read}
+}
+
+ftest -e /net/dns || ndb/dns
+ndb/cs
+
+echo welcome to your octopus terminal at $location
+
+mkdir -p /pc /terms /term /term /pc/^(registry what who ui ports music audio)
+chmod +w /pc /terms /term /term /pc/^(registry what who ui ports music audio) >[2] /dev/null
+mkdir -p /mnt/^(view print voice audio registry ports ui what who empty fs snarf mail)
+mkdir -p /tmp/cache
+mkdir -p /term/^(view print voice fs)
+
+
+echo importing PC
+ndb/cs
+o/termns
+o/snarf
+load expr
+
+ftest -e /mnt/what/$sysname || mkdir /mnt/what/$sysname
+echo $location > /mnt/what/$sysname/where
+ftest -e /mnt/who/$user || mkdir /mnt/who/$user
+echo $location > /mnt/who/$user/where
+echo $sysname >/mnt/who/$user/last
+echo $user >/mnt/what/$sysname/owner
+radius=999
+ftest -e /pc/lib/ndb && {
+	radius=`{time ls -ld /pc/acme/dis/win.dis >/dev/null |[2] sed -e 's/.* //' -e 's/\.//' -e 's/t//'}
+}
+radius=${expr $radius 0 + }
+echo $radius > /mnt/what/$sysname/radius
+echo terminal with radius $radius
+
+echo exporting local services
+rm -f /tmp/view.* /tmp/print.*
+bind -c '#U*' /term/fs
+o/spool -m /term/view o/view
+o/spool -m /term/print o/print
+o/voice -m /term/voice
+bind -c /term /terms/$sysname
+# This oxport forks the ns, because of flag -x, to avoid deadlocks.
+o/oxport -x tcp!pc!rop /term &
+o/netget fs 'path /fs' &
+if { ~ $emuhost Plan9 } {
+	bind -c '#₪' /srv
+	9srvfs pc /pc &
+}
+echo welcome to your octopus terminal at $location
+echo PC is $PC
+ftest -e /term/voice/speak && { 
+	echo greetings professor $user >/term/voice/speak 
+	{ echo welcome to your octopus terminal at $location >/term/voice/speak ;
+	echo radius is $radius milliseconds from the PC >/term/voice/speak  } &
+}
+if { ! ~ $emuhost Plan9 } {
+	o/dav&
+}
+font=/fonts/charon/plain.normal.font
+plumber
+o/reboot
+o/live
+ftest -e /dis/o/idle.dis && o/idle
+wm/sh

@@ -1,0 +1,33 @@
+.TH LMOUNT 1
+.SH NAME
+lmount \- octopus link testing mount tool
+.SH SYNOPSIS
+.B o/lmount
+[
+.B \-L
+.I ms
+]
+.B "..."
+.SH DESCRIPTION
+This program is similar to
+.IR mount (1)
+and accepts all its options,
+but includes instrumentation to test services over poor latency links. The flag
+.B -L
+delayes each request sent to the server for
+.I ms
+milliseconds. Requests are delayed concurrently so that throughput is not affected.
+.PP
+Creating a file with name
+.BI !!LAT= N
+is a more convenient way of adjusting the delay to
+.I N
+milliseconds. Once the service is mounted, and its file tree populated, a
+.EX
+touch /mnt/!!LAT=n
+.EE
+would put delays in effect.
+.SH SOURCE
+.B /usr/octopus/port/lmount.b
+.SH SEE ALSO
+.IR mount (1),

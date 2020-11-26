@@ -1,0 +1,32 @@
+TARG=\
+	mero.dis\
+	merotree.dis\
+	mpanel.dis\
+	merocon.dis\
+	merop.dis\
+	omprowcol.dis\
+	omptext.dis\
+	ompimage.dis\
+	ompgauge.dis\
+	ompdraw.dis\
+
+MAIN=mero
+
+MODULES=\
+	dat.m\
+	merotree.m\
+	mpanel.m\
+	merocon.m\
+	merop.m\
+
+SYSMODULES=\
+	../../module/error.m\
+	../../module/io.m\
+	../../module/blks.m\
+	../../module/tbl.m\
+
+
+DISBIN=/dis/o/mero
+
+<../mkdis
+<../mkdismain

@@ -1,0 +1,41 @@
+
+TARG=\
+	gui.dis\
+	layout.dis\
+	live.dis\
+	livedat.dis\
+	menus.dis\
+	owpdraw.dis\
+	owpgauge.dis\
+	owpimage.dis\
+	owprowcol.dis\
+	owptext.dis\
+		tundo.dis\
+		tframe.dis\
+	wpanel.dis\
+	wtree.dis\
+
+MAIN=live
+
+MODULES=\
+	../mero/merop.m\
+	gui.m\
+	layout.m\
+	livedat.m\
+	menus.m\
+	mods.m\
+	tframe.m\
+	tundo.m\
+	wpanel.m\
+	wtree.m\
+
+SYSMODULES=\
+	../../module/blks.m\
+	../../module/error.m\
+	../../module/io.m\
+	../../module/tblks.m\
+
+DISBIN=/dis/o/live
+
+<../mkdis
+<../mkdismain

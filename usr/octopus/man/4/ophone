@@ -1,0 +1,89 @@
+.TH OPHONE 4
+.SH NAME
+ophone \- export nokia n95 services
+.SH SYNOPSIS
+.B ophone
+.SH DESCRIPTION
+.I Ophone
+serves a name space with the nokia n95 devices. Ophone works like 
+.IR oxport (4)
+and must be mounted with 
+.IR ofs (4).
+It listens requests on port 7000.
+.P
+The following files are exported:
+.TP
+.B audio/midi
+This file storage midi bytes that are ready to loud.
+.TP
+.B audio/mp3
+Similar first but mp3 bytes.
+.TP
+.B audio/ctl
+This file allow users control the player. Three comands have been implemented: 
+.I play, stop
+and
+.I clear.
+.TP
+.B contacts
+The file which exports the contacts list. The contacts has the following format:
+.B lastname:name:telefone
+.TP
+.B files
+Under this directory are exporting the files hierachy of the telefone. (SDCard, memory, etc.)
+.TP
+.B sms
+.TP
+	This file allow send a sms through the phone. It's necesary write, in this file, senteces with the following format:
+.B <phone number>:<text>
+.TP
+	The phone number must not start with '+'. The text of the sms will be trunc at 150 characters.
+.TP
+.B kbd
+.TP
+	The keyboard file export all the keypad events while the Playground window is in use. Each read of this file returns two kinds of sentences:
+.P
+.B 	mx y buttons msec: 
+ For the mouse events triggered by the arrows and the fire button. 
+.I x 
+and 
+.I y
+are the position where the pointer must draw. The buttons that are being pressed during the events are reference in 
+.I buttons.
+.P
+.B 	kchar msec: 
+ For the numbers key events. 
+.I char 
+is the key that trigger the event.
+.P
+	In all cases,msec is a time stamp for the event.
+
+.SH EXAMPLE
+After starting Ophone in nokia n95. Devices can be mounted run
+.TP
+.B "o/ofs -A -m /n/phone tcp!n95!7000
+.P
+For playing a MP3 file use
+.TP
+.B cp song.mp3 /n/phone/audio/mp3
+.TP
+.B echo play > /n/phone/audio/ctl
+.P
+Write and send a sms:
+.TP
+.B echo 555000555:Hi all! > /n/phone/sms
+
+.SH SOURCE
+.B /usr/octopus/n95/*
+
+.SH SEE ALSO
+.IR ofs (4)
+and
+.IR oxport (4).
+
+.SH BUGS
+For the time being,
+.I ophone 
+serves files and contact list phone as read-only and does not support autentication, for that reason 
+.I ofs
+must be used with -A flag.

@@ -1,0 +1,44 @@
+.TH CAMERA 4
+.SH NAME
+camera \- camera file system
+.SH SYNOPSIS
+.B o/camera
+[
+.B -d
+.B -m
+.I mnt
+]
+.B ...
+.SH DESCRIPTION
+.I Camera
+serves
+a directory with a  
+.B ctl
+file. Commands (strings) must be written to this file. The
+.B take
+command takes a photograph. You can get
+this photograph reading from the 
+.I ctl
+file. The format
+of the image is JPEG and its resolution is 640x480.
+.PP
+This file server uses the host-dependent module
+.IR mcamera (2)
+to actually take the photograph in the host system.
+.PP
+By default,
+.I camera
+speaks Styx using the standard input, for use with
+.IR mount (1).
+Flag
+.B -m
+can be used to ask
+.I camera
+to mount itself at
+.IR mnt . Flag 
+.B -b
+activates debug messages printing through stderr.
+.SH SOURCE
+.B /usr/octopus/port/camera.b
+.SH SEE ALSO
+.IR camera (2)

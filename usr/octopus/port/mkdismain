@@ -1,0 +1,4 @@
+
+$DISBIN/$MAIN.dis:	$MAIN.dis
+	cp $MAIN.dis $target
+	cp $MAIN.dis /dis/o/$MAIN.dis

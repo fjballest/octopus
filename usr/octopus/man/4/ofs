@@ -1,0 +1,166 @@
+.TH OFS 4
+.SH NAME
+ofs \- mount a file server speaking Op using Styx
+.SH SYNOPSIS
+.B o/ofs
+[
+.B \-Adv
+] 
+[
+.B \-C
+.I alg
+]
+[
+.B -k
+.I keyfile
+]
+[
+.B -m
+.I mnt
+]
+[
+.B -c
+dir
+]
+.I netaddr
+[
+.I path
+]
+.SH DESCRIPTION
+.I Ofs
+dials the
+.I Op
+file server found at
+.I addr
+and mounts it at
+.IR mnt .
+Here,
+.I addr
+may be a file representing a connection, like
+.B /fd/0
+or any other file.
+It speaks both Styx (as a server) and
+Op (as a client) and provides a Styx file server
+to mount in Inferno file trees served from Op
+servers. Usually, the server mounted is
+.IR oxport (4),
+used to export a name space using Op.
+The
+.I path
+(subtree) served by the Op server is
+.B /
+by default, but may be supplied as an option.
+.PP
+This program exists because Op is faster than Styx, regarding
+latency, on network links
+with bad latency, being the main reason that Op requires
+less RPCs than Styx for doing the same thing. However, there
+are some issues to be taken into account when using this program
+to export devices. See
+.IR intro (O)
+for a discussion.
+.PP
+In general, files are retrieved from the server with a single
+.IR get (O)
+operation. Big files require further RPCs. All writes are indeed
+write-through, although those that are not the first
+write, and use a full Styx packet, are sent asynchronously
+(like in delayed writes).
+.PP
+If
+.I mnt
+is given, it mounts itself using flags
+.B MREPL
+and
+.B MCREATE
+at the directory named by
+.IR mnt .
+Otherwise, it uses standard input to serve files speaking Styx (this
+is intended for use with
+.IR mount (1).
+.PP
+By default, 
+.I ofs
+authenticates the client when
+mounting itself, and encrypts the channel using
+.BR RC4 .
+Authentication can be disabled with the
+.B -A
+flag, and the algorithm used to sign/encrypt the channel
+may be changed using
+.B -C
+and supplying the algorithm name in
+.I arg
+(as said in
+.IR ssl (3)).
+The key-file used for authentication follows the standard
+convention used in Inferno, but may be otherwise specified to
+be
+.I keyfile
+using
+.BR -k .
+.PP
+When the special name
+.B auto
+is given in
+.I mnt
+the program reads a system name from the connection, before mounting it,
+and uses
+.BI /term/ remotename
+to automatically mount the remote tree. The system name is read by first reading
+9 bytes, which should be a UTF-8 string with 8 digits in printable form and a new line. Then, it
+reads so many bytes and takes that string (in UTF-8) to be the remote system name.
+.PP
+Flag
+.B -d
+enables (very) verbose debug diagnostics. Trying to access a file named
+.B !!DUMP
+dumps the internal state of the cache, for debugging.
+.PP
+Flag
+.B -v
+makes the program report some protocol statistics before exiting.
+.PP
+Flag
+.B -c
+instructs
+.B ofs
+to use a local, on-disk, cache located at
+.I dir
+to keep files fetched/update from/to the server. The cache is only used to serve
+read requests for files that are not entirely cached on-memory (that is, for files
+that are not quite small). The directory structure reflects that of the server. One nice
+side-effect of using this cache is that files updated to the server are still kept in the local
+disk, should the connection to the server fail.
+.SH EXAMPLE
+Import (using Op) a remote file tree and mount it at
+.BR /n/pc .
+.IP
+.B "o/ofs  -m /n/pc tcp!opserver.org!10000
+.PP
+Import a locally-served file tree using
+.I mount
+(ie., start
+.I Ofs
+using standard input as the Styx connection).
+.IP
+.B "mount  -c {o/ofs -C rc4  tcp!127.0.0.1!10000} /n/pc
+.PP
+Listen for calls from a remote export program, and make
+remote trees available at
+.B /term/$remotesysname
+(encrypting the channel). Where,
+.B $remotesysname
+is given by the export program at the other end.
+.IP
+.B "listen -tv 'tcp!*!17004' {
+.br
+.B "	o/ofs -A -d -m auto /fd/0   >[2]/dev/cons&
+.br
+.B "}
+.SH SOURCE
+.B /usr/octopus/port/ofs
+.SH SEE ALSO
+.IR intro (O)
+and
+.IR oxport (4).

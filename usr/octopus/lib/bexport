@@ -1,0 +1,51 @@
+#!/bin/rc
+rfork ne
+ramfs
+path=(/bin .)
+cd /usr/octopus
+if(~ $1 *m* ) {
+	cd man
+	mk man.pdf
+	cd ..
+}
+mkdir -p /tmp/empty /tmp/doc
+mkdir -p /tmp/usr /tmp/usr/octopus /tmp/usr/inferno
+
+for(d in term utils tools tmp os mkfiles man module limbo libtk libsec libprefab libnandfs\
+ libmp libmemlayer libmemdraw libmath liblogfs libkeyring libkern libinterp libfreetype libdynld\
+ libdraw libbio lib9  include emu dist appl )
+	bind /tmp/empty /usr/inferno/$d
+
+bind /tmp/empty /usr/inferno/keydb
+bind /tmp/empty /usr/inferno/lib/ebooks
+bind /tmp/empty /usr/inferno/lib/unidata
+bind /tmp/empty /usr/inferno/pc/what
+bind /tmp/empty /usr/inferno/pc/who
+bind /tmp/empty /usr/inferno/Plan9/386/_bug
+cp /usr/octopus/doc/^(tut/tut.pdf) /tmp/doc
+bind /tmp/doc /usr/octopus/doc
+bind /tmp/empty /usr/octopus/port/ofs/testing
+bind /tmp/empty /usr/octopus/port/nope
+bind /tmp/empty /usr/octopus/lib/src
+bind /usr/octopus /tmp/usr/octopus
+bind /usr/inferno/usr/inferno /tmp/usr/inferno
+bind /tmp/usr /usr/inferno/usr
+bind /usr/octopus/lib/ndb /usr/inferno/lib/ndb
+cd /usr/inferno
+9fs src || { echo no src ; exit src }
+cp /usr/octopus/README.O* /usr/octopus/INSTALL.O* .
+cp /usr/octopus/NOTICE NOTICE.Octopus
+for(a in FreeBSD Hp Inferno Irix Linux MacOSX NetBSD Nt OpenBSD Plan9 Solaris){
+	for(o in FreeBSD Hp Inferno Irix Linux MacOSX NetBSD Nt OpenBSD Plan9 Solaris)
+		bind /tmp/empty /usr/inferno/$o
+	unmount /usr/inferno/$a
+	echo doing o.$a.zip
+	zip -f /n/src/octopus/o.$a.zip .
+	chmod +t /n/src/octopus/o.$a.zip
+	ls -Tl /n/src/octopus/o.$a.zip
+}
+echo updating web
+cp /n/src/octopus/o.*.zip /usr/web/export/
+chmod +t /usr/web/export/o.*.zip
+chmod +t /n/src/octopus/*.zip
+ls -lT /usr/web/export/o.*.zip

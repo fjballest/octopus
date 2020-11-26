@@ -1,0 +1,8 @@
+#!/dis/sh.dis -n
+load std
+d=`{pwd}
+for s in 1 2 4 O {
+	cd $d/$s
+	echo $d/$s
+	 { for x in * { ~ $x *.html || man2txt $x } } | sed 's/Inferno Manual/Octopus Manual/' > ../$s.txt
+}

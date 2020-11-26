@@ -1,0 +1,40 @@
+.fp 1 R LucidaSans
+.fp 2 I LucidaSansI
+.ps36
+.sp 3.0i
+.ce
+Octopus
+.BP /usr/octopus/man/logo 0.75i
+.sp |4.4i
+.ps24
+.ce
+User's Manual
+.sp .3i
+.ce
+.sp |7i-1
+.BP /usr/octopus/man/logols 1i
+.sp .3i
+.ps12
+.sp |6i-1
+.ft I
+.ce
+Second Edition
+
+.ce
+May 2008
+.sp |9i-1
+.ps11
+.ce
+Copyright © 2008 Laboratorio de Sistemas
+.ce
+Copyright © 2007 Vitanuova  Holdings  Ltd.
+
+.ce
+GSyC — Universidad Rey Juan Carlos
+
+.ce
+Madrid (Spain)
+.ce
+.nf
+http://lsub.org/ls/octopus.html
+.bp

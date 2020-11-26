@@ -1,0 +1,16 @@
+#!/bin/rc
+# Example start script for octopus on Plan 9, both
+# for PC and terminals
+
+rfork ne
+if (! test -e /bin/emu)
+	bind -a /usr/inferno/Plan9/$objtype/bin /bin
+
+unmount /usr/inferno/$home >[2]/dev/null
+bind -ac $home /usr/inferno/$home
+bind -c /tmp /usr/inferno/tmp
+echo -n octopus >/dev/label
+echo scroll >/dev/wctl
+
+args=`{echo $vgasize | sed 's/x/ /g' | awk '{x0 = $1-10; x1=$2-90; printf("-g%dx%d\n", x0, x1); }'}
+emu '-pmain=64M'  $args /dis/wm/wm.dis wm/logon -u $user

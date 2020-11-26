@@ -1,0 +1,21 @@
+database=
+	file=/lib/ndb/local
+	file=/lib/ndb/dns
+	file=/lib/ndb/inferno
+	file=/lib/ndb/common
+	file=/lib/ndb/octopus
+
+#
+# default site-wide resources
+#
+infernosite=
+	dnsdomain=YOURDOMAINNAME
+	dns=YOURDNSIPADDRESS
+	SIGNER=pc
+	FILESERVER=pc
+	smtp=YOURSMTP
+	registry=pc
+
+sys=pc dom=YOURSYSNAME.YOURDOMAINNAME ip=YOURIPADDRESS
+sys=YOURSYSNAME dom=YOURSYSNAME.YOURDOMAINNAME ip=YOURIPADDRESS
+

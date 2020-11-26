@@ -1,0 +1,88 @@
+.TH OPMUX 2
+.SH NAME
+Opmux, rpc \- RPC multiplexor for the Op file protocol
+.SH SYNOPSIS
+.EX
+include "op.m";
+include "opmux.m";
+opmux := load Opmux Opmux->PATH;
+
+init:	fn(ofd: ref Sys->FD, op: Op, endc: chan of string);
+rpc:	fn(t: ref Op->Tmsg) : chan of ref Op->Rmsg;
+term: fn();
+
+recoverfn:	ref fn(): ref Sys->FD;
+dump: fn();
+debug: int;
+.EE
+.SH DESCRIPTION
+.I Opmux
+provides a multiplexor for Op connections. It permits issuing concurrent
+requests through the same connection.
+.PP
+.I Init
+initializes and prepares the module for operation. The other end of
+the connection reached through
+.I ofd
+should be a server speaking Op. See
+.IR intro (O).
+An implementation for the
+.IR op (2)
+module must be supplied in the
+.I op
+argument. The channel
+.I endc
+can be used to terminate the multiplexor, by sending anything through it.
+Usually, the error condition causing the termination is sent through.
+.PP
+The function
+.I rpc
+makes an Op RPC to the server reached through
+.I ofd
+(given to
+.IR init ).
+It must receive a valid
+.B Tmsg
+and returns a channel that can be used to obtain the reply as received
+from the server. Errors are signaled by means of
+.I Rmsg.Error
+adts sent through this channel. The reply channel has enough
+buffering to permit callers of
+.I rpc
+to ignore one reply message. But note that
+.B Tget
+requests asking to read data from a directory may receive a potentially
+infinite number of replies, see
+.IR get (O)
+for details. 
+.PP
+The global
+.B debug
+may be set to a non-zero value to cause
+.I Opmux
+to print Op messages as they are sent/received. As an additional
+aid,
+.B dump
+prints the internal state of the multiplexor (ie., messages sent with
+pending replies) for debugging.
+.PP
+The function
+.I term
+terminates the operation of the module, aborting any outstanding RPC.
+.PP
+You may set the
+pointer
+.B recoverfn
+to point to a function that returns a new descriptor open to reach the same server,
+and
+.I opmux
+will try to recover by calling it, should it lose the connection. This feature is experimental
+and not tested enough to be trusted.
+.SH SOURCE
+.B /usr/octopus/port/lib/opmux.b
+.SH SEE ALSO
+.IR intro (O),
+.IR op (2),
+and
+.IR intro (5).
+

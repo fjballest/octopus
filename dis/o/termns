@@ -1,0 +1,28 @@
+#!/dis/sh.dis -n
+#
+# Build a octopus name space within the PC
+
+load std
+
+ftest -e /n/pc/NOTICE || {
+	mount -c tcp!pc!styx /n/pc
+	bind -c /n/pc/registry /mnt/registry
+}
+
+ftest -e /pc/NOTICE || {
+	if { ~ $sysname pc || ~ $emuhost Plan9 } {
+		# Plan9 are at lsub. don't cache local
+		# files twice
+		o/ofs  -m /pc tcp!pc!op
+	} {
+		o/ofs -c /tmp/cache -m /pc tcp!pc!op
+	}
+}
+ftest -e /pc/NOTICE || {echo reboot >/dev/reboot }
+bind -c /pc/terms /terms
+bind -c /n/pc/ports /mnt/ports
+bind -c /n/pc/ui /mnt/ui
+bind -c /pc/what /mnt/what
+bind -c /pc/who /mnt/who
+bind -c /pc/n/main/mail/box/$user/msgs /mnt/mail >[2] /dev/null
+bind -c /pc/usr/$user/lib/snarf /mnt/snarf

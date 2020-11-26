@@ -1,0 +1,232 @@
+.TH NAMESPACE 4
+.SH NAME
+namespace, ons \- octopus name space and conventions
+.SH DESCRIPTION
+In the octopus, there are several name space conventions and programs
+rely on them. This manual page documents such conventions.
+Besides, depending on where the namespace is used,
+it is sensible to adhere to Inferno or to the host OS (eg. Plan 9)
+conventions as well.
+.PP
+The script
+.I ons
+adjusts the Inferno name space to adhere the octopus
+conventions.
+.PP
+There are several name spaces of interest, depending on where the application
+executes (or where are we browsing files from). Most times, applications and browsed
+files belong to the host system of the PC (eg., Plan 9). The next subsection documents
+such name space. A following section documents the name space as found on the Inferno
+running at the PC.
+.SS PC Name space
+This section assumens the PC host system is Plan 9 from Bell Labs. Adjustment
+of name spaces in other native host systems is not yet supported, although it will be
+in the future.
+.PP
+Most conventions of Plan 9 name spaces hold, like using
+.B /bin
+for binaries and
+.B /usr
+for user files.
+The following files and directories are also available when using the PC
+from the Octopus:
+.TF /pc/who/$user/where
+.TP
+.B /dev/snarf
+The clipboard. Usually it is an actual file at
+.CW $home/lib/snarf/snarf
+bound to
+.CW /dev
+along with the next file.
+.TP
+.B /dev/sel
+contains the path for the (user interface) panel where a selection was
+last made. The file is kept at
+.B $home/lib/snarf/sel
+or a similar place and bound to
+.B /dev
+like before.
+.TP
+.B /mnt
+contains directories where different resources added to the PC can be found.
+.TP
+.B /mnt/ui
+contains the file system interface for the Octopus window system, Omero. See
+.IR omero (4)
+for a description.
+.TP
+.B /mnt/ports
+contains a directory providing the event delivery mechanism used by the Octopus.
+.TP
+.B /mnt/view
+is a file viewer device. To view a file (e.g., a PDF) it suffices to copy it to this
+directory. A document viewer at a terminal near the user (probably one at the terminal
+being used to request the copy) will be launched as a result of the copy.
+.TP
+.B /mnt/view/ndb
+is a text file describing properties of the view device. Among other things it describes
+the location of the device and the terminal providing it.
+.TP
+.B /mnt/print
+is a printing device. To print a file, copy it to this directory. The file will be printed
+at the default printer queue provided by a terminal near the user.
+.TP
+.B /mnt/print/ndb
+describes the print device. All devices include an
+.B ndb
+file by convention (although we will not mention it further).
+.TP
+.B /mnt/print/voice
+is a voice synthesis device. To speak some text, copy it to the
+.B speak
+file it provides. As all other devices mounted at
+.B /mnt
+the device used will be one near the user.
+.TP
+.B /mnt/terms/\fIterminal\fP
+is a directory where devices and resources from the machine
+.I terminal
+can be found. There are multiple terminals mounted below
+.B /mnt/terms
+in the same way.
+We mention some devices next, but not all of
+them would be provided by all terminals. The devices found
+directly at
+.B /mnt
+come indeed from the ones we mention here.
+.TP
+.B /mnt/terms/\fIterminal\fP/view
+is the view device provided by the terminal.
+.TP
+.B /mnt/terms/\fIterminal\fP/print
+is the print device from that terminal.
+.TP
+.B /mnt/terms/\fIterminal\fP/voice
+is its voice synthesis device.
+.TP
+.B /mnt/terms/\fIterminal\fP/fs
+contains the file system from
+.I sysname
+(from its native OS, not from the Inferno it runs).
+This can be used to transfer files back and forth between
+the PC and the terminal.
+.TP
+.B /n/pc
+contains the name space of the Inferno running at the PC. All
+resources described before in this list come from this file tree.
+.TP
+.B /what
+contains information about machines.
+.TP
+.B /what/\fImachine\fP
+contains information about the system named
+.IR machine .
+.TP
+.B /what/\fImachine\fP/where
+contains the machine location.
+.TP
+.B /what/\fImachine\fP/radius
+contains the RTT for performing a particular FS operation on the machine from
+the PC.
+.TP
+.B /what/\fImachine\fP/owner
+contains the name of the user owning the machine.
+.TP
+.B /who
+contains information about users.
+.TP
+.B /who/\fIuser\fP
+contains information about user
+.IR user .
+.TP
+.B /who/\fIuser\fP/where
+contains the last known location for the user.
+.TP
+.B /who/\fIuser\fP/last
+contains the name of the last terminal used by this user.
+.TP
+.B /who/\fIuser\fP/status
+contains the status of the user. It is usually on of
+.BR online ,
+.BR busy ,
+or
+.BR away .
+.SS PC Inferno name space
+The name space space at the Inferno running on the PC is
+similar to that of any other Inferno installation, but includes
+the following files and directories. Unless said otherwise,
+the directories mean the same the do in the name space of
+the PC.
+.TF /dis/o/$emuhost
+TP
+.B /dis/o
+contains the Dis binaries for the Octopus.
+.TP
+.B /dis/o/$emuhost
+contains Dis binaries for the Octopus intended for
+the host system represented by the
+.B $emuhost
+variable. This directory is bound also at
+.B /dis
+to add platform dependent binaries to the portable ones.
+.TP
+.B /mnt/registry
+is the mount point for the registry, describing
+resources known by the Octopus.
+.TP
+.B /mnt/ui
+.TP
+.B /mnt/ports
+.TP
+.B /mnt/snarf
+contains the
+.B snarf
+and
+.B sel
+files found at
+.B /dev
+in the PC.
+.TP
+.B /mnt/view
+.TP
+.B /mnt/print
+.TP
+.B /mnt/voice
+.TP
+.B /mnt/fs
+contains the PC name space, including
+the files described before for the PC.
+.TP
+.B /mnt/what
+is the PC
+.B /what
+directory, and contains information about machines.
+.TP
+.B /mnt/who
+is the PC
+.B /who
+directory and contains information about users.
+.TP
+.B /terms
+is similar to
+.B /mnt/terms
+in the PC.
+.SS Terminal name space
+The name space at the Inferno running on a terminal has
+the file tree of the PC's Inferno at
+.B /pc
+(using the Octopus protocol as the file protocol) and also at
+.B /n/pc
+(using Styx as the file protocol). The former works better
+on poor network connections but the later is closer to expected
+semantics for file access. Also,
+.B /mnt/registry
+.B /mnt/snarf
+and other devices from the PC are available for use by terminal
+software.
+.SH SOURCE
+.B /usr/octopus/port/ons
+.SH SEE ALSO
+.IR nsbuild (1),
+.IR wm (1),
+.IR newns (2)

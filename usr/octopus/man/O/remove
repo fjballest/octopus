@@ -1,0 +1,40 @@
+.TH REMOVE O 
+.SH NAME
+remove \- remove a file
+.SH SYNOPSIS
+.ta \w'\fLTauth 'u
+.IR size[4]
+.B Tremove
+.IR tag [2]
+.IR path [ s ]
+.br
+.IR size [4]
+.B Rremove
+.IR tag [2]
+.SH DESCRIPTION
+.PP
+The
+.B remove
+message asks the server to remove the file identified by
+.IR path .
+See
+.IR intro (O)
+for a description of that field.
+.PP
+The user must have write permission in the directory containing the file. An attempt
+to remove the root directory of the server should always fail.
+.PP
+File descriptors used for Put and Get transactions, which point to the removed file, would still be
+valid after a Remove transaction. The client should terminate those descriptors besides removing
+the file, but that may be done asynchronously with respect to the remove request.
+.SH ENTRY POINTS
+A
+.B remove
+transaction will be generated from
+.B Tremove
+requests from STYX, resulting from
+.IR remove (2)
+calls.
+.SH SEE ALSO
+.IR remove (2).
+

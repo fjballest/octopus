@@ -1,0 +1,56 @@
+.TH NETGET 2
+.SH NAME
+Netget, announce, terminate \- octopus network service registering module
+.SH SYNOPSIS
+.EX
+include "netget.m";
+netget := load Netget Netget->PATH;
+
+init:	fn(nil: ref Draw->Context, args: list of string);
+announce: fn(name: string, spec: string) : string;
+ndb:	fn() : string;
+terminate: fn();
+.EE
+.SH DESCRIPTION
+.I Netget
+simplifies (and unifies) how network services are registered in the octopus.
+It can be used to register any service provided by a file server, or by any other
+means.
+Refer to
+.IR netget (1)
+for a description of how to use this module as a command, and for the behaviour of the module.
+.PP
+.I Init
+should not be called. It is meant to provide a command interface for the module.
+.PP
+.I Announce
+announces
+the service with name
+.I name
+and
+attributes as said in
+.IR spec .
+See
+.IR netget (1)
+for a description of these arguments and an example. It does so by
+registering with the registry mounted at
+.B /mnt/registry
+or reached by dialing
+.B tcp!pc!registry
+(if
+.B /mnt/registry
+did not contain a registry).
+.PP
+The function
+.I ndb
+returns a string with attribute/value pairs using the format
+of
+.IR ndb (6),
+and can be used to determine what has indeed been registered.
+.PP
+.I Terminate
+ceases registration for the service.
+.SH SOURCE
+.B /usr/octopus/port/lib/netget.b
+.SH SEE ALSO
+.IR netget (1).

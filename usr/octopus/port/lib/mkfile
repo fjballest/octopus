@@ -1,0 +1,40 @@
+TARG=\
+	op.dis\
+	opmux.dis\
+	netutil.dis\
+	error.dis\
+	netget.dis\
+	os.dis\
+	query.dis\
+	tbl.dis\
+	view.dis\
+	panel.dis\
+	tblks.dis\
+	io.dis\
+	xproc.dis\
+	blks.dis\
+	nop.dis\
+
+MODULES=\
+
+SYSMODULES=\
+	error.m\
+	netget.m\
+	netutil.m\
+	op.m\
+	opmux.m\
+	os.m\
+	query.m\
+	tbl.m\
+	spooler.m\
+	panel.m\
+	tblks.m\
+	io.m\
+	xproc.m\
+	blks.m\
+	nop.m\
+
+
+DISBIN=/dis/o
+
+<../mkdis

@@ -1,0 +1,73 @@
+.TH QUERY 1
+.SH NAME
+query \- octopus resource query tool
+.SH SYNOPSIS
+.B query
+[
+.B \-u
+.I mnt
+]
+[
+.B \-m
+.I mnt
+]
+.I name
+.I val
+.B "..."
+.SH DESCRIPTION
+.I Query
+asks the registry for octopus resources matching attributes specified with
+.I name
+and
+.I val
+arguments (attribute name and value). By default,
+.I query
+prints a list of paths for matching resources in the registry. The paths should be
+ready to be used within a octopus name space, see
+.IR namespace (4).
+.PP
+The special value
+.B $user
+for the attribute
+.B loc
+refers to the user location as reported by
+.BR /mnt/who/$user/where .
+In the same way,
+.B $term
+refers to the terminal location for the
+.B loc
+attribute and
+to the terminal architecture for the
+.B arch
+attribute.
+.PP
+Flag
+.B -m
+asks
+.I query
+to
+.IR bind (1)
+any of the matching resources at
+.I mnt .
+Flag
+.B -u
+works in the same way, but creates a union with all the resources found, instead
+of binding just one.
+.PP
+Note that using
+.B -m
+or
+.B -u
+flags would make the current name space dependent on a particular
+octopus resource. This means that when the terminal that provides it goes
+away, the mount point will break and fail for further operations. That is, this is
+a static, regular, Inferno mount, and does not adapt to changes. Use
+.IR mux (4)
+to adapt.
+.SH SOURCE
+.B /usr/octopus/port/lib/query.b
+.SH SEE ALSO
+.IR pcns (1),
+.IR mux (4),
+and
+.IR pcrc (1).

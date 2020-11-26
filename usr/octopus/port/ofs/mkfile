@@ -1,0 +1,25 @@
+TARG=\
+	ofs.dis\
+	ofsstyx.dis\
+	stop.dis\
+	ofstree.dis\
+	ofsnotify.dis\
+
+MAIN=ofs
+
+MODULES=\
+	stop.m\
+	ofstree.m\
+	ofsnotify.m\
+
+SYSMODULES=\
+	../../module/op.m\
+	../../module/error.m\
+	../../module/io.m\
+	../../module/opmux.m\
+	../../module/netutil.m\
+
+DISBIN=/dis/o/ofs
+
+<../mkdis
+<../mkdismain

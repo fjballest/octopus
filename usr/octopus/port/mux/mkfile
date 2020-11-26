@@ -1,0 +1,17 @@
+TARG=\
+	mux.dis\
+	muxdat.dis\
+
+MODULES=\
+	muxdat.m\
+
+SYSMODULES=\
+	../../module/error.m\
+	../../module/netget.m\
+	../../module/netutil.m\
+	../../module/query.m\
+	../../module/tbl.m\
+
+DISBIN=/dis/o
+
+<../mkdis

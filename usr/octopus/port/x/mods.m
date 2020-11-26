@@ -1,0 +1,82 @@
+include "sys.m";
+	sys: Sys;
+	NEWFD, Qid, FD, create, read, fstat, fildes, pctl,
+	sleep, stat, QTDIR, OREAD, OWRITE, OTRUNC,
+	print, open, dup, chdir, pipe, fprint, seek, write,
+	tokenize, DMDIR, NEWPGRP, sprint: import sys;
+include "draw.m";
+include "arg.m";
+	arg: Arg;
+include "env.m";
+	env: Env;
+	getenv, setenv: import env;
+include "readdir.m";
+	readdir: Readdir;
+	NAME: import readdir;
+include "names.m";
+	names: Names;
+include "daytime.m";
+	daytime: Daytime;
+	now: import daytime;
+include "workdir.m";
+	workdir: Workdir;
+include "string.m";
+	str: String;
+	splitstrr, splitl, splitstrl: import str;
+include "error.m";
+	err: Error;
+	checkload, stderr, error, kill: import err;
+include "sh.m";
+	sh: Sh;
+	system: import sh;
+include "panel.m";
+	panels: Panels;
+	Pev, Panel: import panels;
+include "io.m";
+	io: Io;
+	readfile: import io;
+include "os.m";
+	os: Os;
+include "tblks.m";
+	tblks: Tblks;
+	strchr, Tblk: import tblks;
+include "xedit.m";
+	oxedit: Oxedit;
+include "xex.m";
+	oxex: Oxex;
+include "samlog.m";
+	samlog: Samlog;
+include "sam.m";
+	sam: Sam;
+include "samcmd.m";
+	samcmd: Samcmd;
+include "regx.m";
+	regx: Regx;
+include "load.m";
+	oxload: Oxload;
+include "xdat.m";
+	dat: Oxdat;
+
+initmods(m: Oxdat->Mods)
+{
+	sys = m.sys;
+	env = m.env;
+	daytime = m.daytime;
+	err = m.err;
+	io = m.io;
+	names = m.names;
+	oxedit = m.oxedit;
+	oxex = m.oxex;
+	oxload = m.oxload;
+	panels = m.panels;
+	readdir = m.readdir;
+	regx = m.regx;
+	sam = m.sam;
+	samcmd = m.samcmd;
+	samlog = m.samlog;
+	sh = m.sh;
+	str = m.str;
+	tblks = m.tblks;
+	workdir = m.workdir;
+	os = m.os;
+}

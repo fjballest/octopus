@@ -1,0 +1,52 @@
+.TH DAV 4
+.SH NAME
+dav \- web dav file server
+.SH SYNOPSIS
+.B o/dav
+[
+.B \-dr
+]
+[
+.B \-a
+.I addr
+]
+.SH DESCRIPTION
+.I Dav
+is a WebDAV file server that exports an Inferno name space through the
+WebDAV protocol, as described in RFCs 2518 and 2616.
+.PP
+Its primary usage is to let the host operating system (for systems other
+than Plan 9) use the name space of the Inferno.
+.PP
+By default, it spawns a backgroup process that listens
+for clients at port
+.I 9999
+on the loopback network interface. Option
+.B -a
+may be used to make it listen at
+.I addr
+instead.
+.PP
+Flag
+.B -r
+makes the server read-only, for safety.
+.PP
+Flag -d
+activates debug diagnostics. Repeating the flag one or more increases the
+verbosity.
+.SH SOURCE
+.B /usr/octopus/port/dav
+.SH SEE ALSO
+.IR rfc2518 ,
+.IR rfc2616 ,
+and
+.IR rfc3744 .
+for the protocol.
+.SH BUGS
+The program is new and has been tested only with MacOS X Leopard.
+ACL processing is incomplete at most.
+Use with caution.
+Also, there should be a way to export only part of a namespace.
+A bug in
+.IR bufio (2)
+requires using the fixed version found at lsub for this module.

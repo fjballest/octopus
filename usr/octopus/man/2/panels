@@ -1,0 +1,243 @@
+.TH PANELS 2
+.SH NAME
+panels \- octopus user interface panel library
+.SH SYNOPSIS
+.EX
+include "panel.m";
+panels := load Panels Panels->PATH;
+
+Panel: adt {
+	id:		int;
+	name:	string;
+	path:	string;
+
+	init:	fn(name: string): ref Panel;
+	evc:		fn(p: self ref Panel): chan of ref Pev;
+	new:		fn(p: self ref Panel, name: string, id: int): ref Panel;
+	newnamed:		fn(p: self ref Panel, name: string, id: int): ref Panel;
+	ctl:		fn(p: self ref Panel, ctl: string): int;
+	attrs:	fn(p: self ref Panel): ref Attrs;
+	close:	fn(p: self ref Panel);
+};
+
+Elook:	con "look";
+Eexec:	con "exec";
+Eclose:	con "close";
+Eclean:	con "clean";
+Edirty:	con "dirty";
+Eintr:	con "interrupt";
+Eclick:	con "click";
+Ekeys:	con "keys";
+Efocus:	con "focus";
+
+Pev: adt {
+	id:	int;
+	path:	string;
+	ev:	string;
+	arg:	string;
+};
+
+Attrs: adt {
+	tag:		int;
+	show:	int;
+	col:		int;
+	applid:	int;
+	applpid:	int;
+	clean:	int;
+	font:	int;
+	sel:		(int, int);
+	mark:	int;
+	scroll:	int;
+	tab:	int;
+	attrs:	list of list of string;	# list of other attrs
+};
+
+init:		fn();
+screens:		fn(): list of string;
+cols:		fn(scr: string): list of string;
+rows:		fn(scr: string): list of string;
+sel:		fn(): string;
+omero:		string;
+
+.EE
+.SH DESCRIPTION
+.I Panels
+is a convenience module to impement user interfaces
+for the
+.I o/mero
+window system. Refer to
+.IR olive (1)
+for an introduction and to
+.IR omero (4)
+for a description of the file system interface.
+.PP
+.I Init
+must be called before calling any other utility in the library, to initialize
+it by loading required modules. This also initializes
+.B omero
+with the path to the omero file tree, as reported by the
+.B $omero
+environment variable.
+.PP
+A
+.B Panel
+represents an
+.I o/mero
+panel. It corresponds to a directory in the
+.I o/mero
+file tree. The name of the panel, and its absolute path in the current name
+space are kept in
+.B Panel.name
+and
+.B Panel.path
+respectively.
+Applications may give identifiers (numbers) to omero panels. The
+identifier for a panel is kept in its
+.BR Panel.id .
+.PP
+Before creating any panel, the application must create a directory in the
+.B /appl
+directory of omero. That is, an initial container panel. This panel is created by
+.I Panel.init
+(which should be called right after initializing the library to create an application
+container with the name given in
+.IR name ).
+The function returns a reference to the panel. Also, it sets the application process id
+to that of the caller process and the panel id to zero. Both things are done
+via appropriate control operations on the panel. When the last reference to this
+.B Panel
+is lost, the entire application
+panel hierarchy is removed by omero.
+.PP
+A new panel may be created by calling
+.I Panel.new
+on a container panel, supplying the desired panel
+.I name
+and
+.IR id .
+The name is randomized by the library, to make it unique and avoid conflicts
+in the file system.
+.I Panel.newnamed
+is like
+.I Panel.new
+but does not randomize the name.
+To remove a panel, call
+.I Panel.close
+on it.
+.PP
+To create a
+.I Panel
+for an panel that already exists it is allowed to
+call
+.I Panel.init
+or
+.I Panel.new
+with
+.I nm
+being an absolute path. In this case a
+.B Panel
+structure is built for panel (and returned).
+.PP
+Control and data files for the panel may be open and used by the application,
+by appending the strings
+.B /ctl
+or
+.B /data
+to the value of
+.B Panel.path
+and opening the resulting file name.
+.PP
+.I Panel.ctl
+writes a control operation to the panel control file.
+.I Panel.attrs
+reads and parses a control file, reporting the attributes for the panel by
+returing a reference to
+.BR Attrs .
+.PP
+Many attributes are converted to their integer value as an extra convenience.
+The field name should make it clear the attribute reported.
+Other attributes are reported (parsed) in a list of attributes using
+.B Attrs.attrs
+(containing a list of strings for each attribute).
+.PP
+.I Panel.evc
+returns a channel that can be used to receive events for a panel (and all its
+inner panels). Usually, it is called once for the top-level panel. The panel identifier
+contained in the omero event (or the panel path, also contained) can be used
+to demultiplex the event stream. Each receive from the channel returns a tuple
+of strings with the event arguments (already parsed): panel id, panel path,
+event type, and the optional argument string.
+.PP
+What has been said is not enough to make panels appear on a screen. Replicas
+must be created on the desired location. To aid in locating an appropriate place,
+.I screens
+returns a list of omero screen names,
+.I cols
+returns a list of column paths for the given screen name (in the order they are shown),
+and
+.I rows
+returns a list of row paths for the given screen name. Usually, rows keep small
+informative utilities and most application panels are replicated onto columns.
+.PP
+The utility function
+.I copy
+from
+.IR io (2)
+can be used to update text or image panels with
+other file contents, or viceversa.
+.PP
+The function
+.I sel
+returns the last text selected by the user. It reads
+both the control and data files for the user selection, so
+its result should be cached if needed multiple times.
+.PP
+.I Userscreen
+returns the name of the last screen used, as reported by
+.BR /dev/sel .
+.SH EXAMPLES
+.PP
+Initialize, and create a text panel containing
+.B /NOTICE :
+.EX
+	panels->init();
+	ui := Panel.init("xample");
+	text := ui.new("text:xample", 1);
+	sfd := open("/NOTICE", OREAD);
+	dfd := open(text.path+"/data", OWRITE|OTRUNC);
+	io->copy(dfd, sfd);
+.EE
+.PP
+Show the panel on the first column of the first screen:
+.EX
+	scr := hd panels->screens();
+	col := hd panels->cols(scr);
+	text.ctl(sprint("copyto %s\n", col);
+.EE
+.PP
+Start receiving and printing events:
+.EX
+	c := ui.eventc();
+	for(;;){
+		ev := <-evc;
+		if (ev == nil)
+			break;
+		print("path %s id %s ev %s\n", ev.path, ev.id, ev.ev);
+	}
+.EE
+.PP
+The source of
+.IR oh (1)
+and
+.IR oclock (1)
+can be used as more elaborate examples.
+.SH SOURCE
+.B /usr/octopus/port/lib/panel.b
+.SH SEE ALSO
+.IR olive (1)
+and
+.IR omero (4).
+.SH BUGS
+The interface is not exactly the same used by the Limbo module of
+the same name, because we do not have Limbo strings and ADTs.
+.

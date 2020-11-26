@@ -1,0 +1,29 @@
+This is Octopus, 2nd edition.
+
+See INSTALL.Octopus for installation instructions
+Also, 9octopus.tgz contains some Plan 9 programs for use
+with the octopus.
+
+Octopus files:
+
+MacOSX:	software that depends on using a host w/ MacOSX
+Plan9:	software that depends on using a host w/ Plan 9 or Plan B
+port:	portable software
+module:	system modules	(mdep. ones start with m)
+man:	manual pages
+lib:	various config files
+doc:	various papers
+
+
+To compile:
+
+OCTOPUS=/usr/octopus
+cd $OCTOPUS/port
+mk clean
+mk install
+or limbo -I $OCTOPUS/module otherwise
+
+To start a PC:
+	o/pcrc
+To start a terminal:
+	o/termrc

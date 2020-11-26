@@ -1,0 +1,28 @@
+#!/dis/sh -n
+# The PC name space
+
+load std
+pctl forkns
+log=/n/log/octopus
+echo starting PC name space
+svc/registry>>[2]/n/log/octopus
+bind -c /mnt/registry /pc/registry
+bind -c /usr/$user/lib/snarf /mnt/snarf
+bind -c /usr/$user/lib/snarf /pc/snarf
+o/ports
+o/mero
+mkdir /mnt/ui/main
+bind -c /mnt/ports /pc/ports
+bind -c /mnt/ui /pc/ui
+auth/keyfs -n /keydb/nvr	# registry gets rid of it. relaunch
+bind -ac '#U' /pc
+bind -c /terms /pc/terms
+# export / import it
+listen -tv 'tcp!*!styx' {export /pc>>[2]$log&}
+listen -tv 'tcp!*!op' {o/oxport /pc >>[2]$log&}
+listen -tv 'tcp!*!rop' {o/ofs -A -m auto /fd/0 >>[2]$log&}
+
+# GC
+o/watcher -v  >>[2]$log
+echo '^(arrived|gone):.*' >>/mnt/ports/terms
+{ while { x=`{read </mnt/ports/terms} } {echo newterm $x >>$log} } &

@@ -1,0 +1,47 @@
+.TH PLUMBING 1
+.SH NAME
+plumbing \- listen to plumb port and execute commands to attend messages
+.SH SYNOPSIS
+.B plumbing
+[
+.B \-v
+]
+.I port
+.I cmd
+[
+.I arg...
+]
+.SH DESCRIPTION
+.I Plumbing
+spawns a child process to listen for messages in the
+.IR plumber (8)
+.I port
+given as an argument. For each message received, it executes
+.I cmd
+as a shell command. The command has the environment variable
+.I $msg
+defined to contain the plumbed message data.
+.PP
+Flag
+.B -v
+makes the program verbose, to report messages received.
+.PP
+Note that in the octopus using
+.IR ports (4)
+is preferred to
+.IR plumber (8)
+for reporting events, because it does not require plumber ports
+to be created in advance.
+.SH EXAMPLE
+.PP
+Execute
+.B o/newterm
+each time a message is sent to the
+.B netget
+plumber port.
+.IP
+.B "o/plumbing  netget { /dis/o/newterm $msg & }
+.SH SOURCE
+.B /usr/octopus/port/plumbing.b
+.SH SEE ALSO
+.IR plumber (8).

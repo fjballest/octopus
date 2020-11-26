@@ -1,0 +1,225 @@
+.TH PUT O 
+.SH NAME
+put \- update a file
+.SH SYNOPSIS
+.ta \w'\fLTauth 'u
+.IR size [4]
+.B Tput
+.IR tag [2]
+.IR path [ s ]
+.IR fd [2]
+.IR mode [2]
+.IR stat [ n ]
+.IR offset [8]
+.IR count [4]
+.IR data [ count ]
+.br
+.IR size [4]
+.B Rput
+.IR tag [2]
+.IR fd [2]
+.IR count [4]
+.IR qid [13]
+.IR mtime [4]
+.SH DESCRIPTION
+.PP
+The
+.B put
+message asks the server to update the file identified by either
+.I path
+or
+.IR fd .
+See
+.IR intro (O)
+and
+.IR get (O)
+for descriptions of these fields. The Put request is similar to
+.IR get (O)
+but updates the file instead of retrieving it.
+.PP
+The field
+.B mode
+must be the result of a bit-or of any of the constants
+.BR ODATA ,
+.BR OSTAT ,
+.BR OCREATE ,
+.BR OMORE ,
+and
+.BR OREMOVEC .
+.PP
+A
+.B put
+with the
+.B ODATA
+bit set updates file data, placing in the file at position
+.BR offset ,
+the number,
+.BR count ,
+of bytes sent in
+.BR data .
+When
+.B ODATA
+is not set, the request does not update file data and no
+.B data
+field must be sent (although a
+.B count
+field must still specify the number, zero, of bytes being sent).
+.PP
+A
+.B put
+request with the
+.B OSTAT
+bit set in
+.B mode
+updates file metadada, as indicated by the
+.B stat
+field (which uses the same format used in Styx).
+A
+.B put
+request without this bit set in the
+.B mode
+field does not send the
+.B stat
+field through the communication channel, and does not update the file
+metadata (other than updating perhaps the modification time and the version as a result
+of updating file data).
+.PP
+A
+.B put
+request with the
+.B OCREATE
+bit set
+in the
+.B mode
+field creates the file if it does not exist, and truncates it
+to zero bytes otherwise. Creation requires permission in
+the directory where the file is being created. Note that the write offset
+is still obeyed even when
+.B OCREATE
+is specified, for messages that also specify
+.BR ODATA .
+.PP
+To create a directory, the
+.B stat
+field must have the
+.B DMDIR
+bit set in the
+.B mode
+field. In this case,
+.B ODATA
+is not allowed. Note that for directories the qid must always have its
+.B QTDIR
+bit set in the
+.B type
+field. See Inferno's
+.IR stat (2)
+or
+.IR stat (5)
+for all the details. Op follows the same conventions.
+.PP
+The reply message must return the number of bytes written to
+the file, which may be zero for requests without
+.BR ODATA ,
+and it is considered an error for the user when they are
+less than the number requested by the
+.B count
+field of the
+.B Tput
+request.
+.PP
+The reply message also conveyes a
+.B qid
+field and a
+.I "modification time
+field back to the client. The former contains a server-unique identifier in its
+.B qid.path
+field, a version number in the
+.B qid.vers
+field, and the bit
+.B QTDIR
+set for directories in the
+.B qid.type
+field. This
+.B qid
+corresponds to the file after processing the
+.B put
+transaction. The modification time sent in
+.B mtime
+reports the last modification time, that is, after the request has been processed. It must
+match the
+.B mtime
+field in the file directory entry, as reported by further Get RPCs.
+.PP
+The
+.B OMORE
+bit may be set in a
+.B put
+request to indicate to the server that further Puts
+might follow as part of the same file update.
+In this case, the reply message contains in
+.B fd
+a descriptor, to be used in further
+requests resulting from the same update. A request without
+.B OMORE
+releases the
+.IR fd
+and therefore terminates the update being made to the file. See
+.IR get (O)
+and
+.IR intro (O)
+for a description of how descriptors work.
+.PP
+Clients are responsible for sending at least one
+.B put
+without
+.B OMORE
+to deallocate a Put descriptor obtained in a previous Put transaction.
+.PP
+The
+.B OREMOVEC
+bit may be set in a request also specifying
+.B OMORE
+to request the server to remove the file while deallocating the
+.IR fd .
+This is useful for temporary files.
+.PP
+Servers must be prepared for handling
+.B put
+requests of up to
+.B MAXDATA
+data bytes, excluding the space for Op headers (and file metadata).
+.PP
+Upon errors, an
+.B Rerror
+reply is sent to the client reporting the cause for the error. Any error
+reply deallocates the
+.B fd
+used by the request, because the update is considered as failed.
+.SH ENTRY POINTS
+In general,
+.B puts
+are sent whenever the user causes a file write, a file creation, or a
+metadata update
+operation. The program
+.IR ofs (4)
+behaves this way. The exception is that
+for writes that are not the first one, and fill a full communications packet,
+.I ofs
+repors
+no error to the user, to avoid waiting for unnecessary replies.
+In general, you may forget about this and assume that the behaviour is
+.I write-through.
+.PP
+Styx servers at the other end of an Op connection may use the Styx
+.B Tclunk
+request to detect when updates to a file complete. However, note that writes
+comming from different clients may be received using the same
+.B fd
+in their requests. That is, the
+.B Tclunk
+would indicate that the file has been updated, not that one particular client
+has completed an update.
+.SH SEE ALSO
+.IR remove (2)
+and
+.IR get (O).

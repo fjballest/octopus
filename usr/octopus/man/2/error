@@ -1,0 +1,58 @@
+.TH ERROR 2
+.SH NAME
+Error, stderr, error, panic, kill, checkload \- Error handling and diagnostics
+.SH SYNOPSIS
+.EX
+include "error.m";
+err := load Error Error->PATH;
+
+init:	fn(s: Sys);
+kill:	fn (pid: int, msg: string): int;
+error: fn(e: string);
+panic: fn(e: string);
+checkload: fn[T](x: T, p: string): T;
+
+stderr: ref Sys->FD;
+.EE
+.SH DESCRIPTION
+.I Error
+provides functions used to deal with errors that are popular. Before
+any other thing,
+.I init
+must be called to initialize the module.
+.PP
+.I Kill
+writes the
+.I msg
+given to the control file for the process identified by
+.IR pid .
+It returns
+.B -1
+upon errors.
+.PP
+The functions
+.I error
+and
+.I panic
+are similar. They print
+the given diagnostic to standard error and
+raise an expection. The second one will make
+the process break, for debugging.
+.PP
+.I Checkload
+is intented to load a module and return it, checking out
+that the module did indeed load. In case of error it calls
+.I error
+with an appropriate message, using the second argument
+as the name of the file that could not be loaded.
+.PP
+The global
+.I stderr
+is standard error, for use from other modules as well.
+Beware that using
+.IR pctl (2)
+may leave
+.I stderr
+closed, despite being not null.
+.SH SOURCE
+.B /usr/octopus/port/lib/error.b

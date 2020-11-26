@@ -1,0 +1,21 @@
+.TH OXOPEN 1
+.SH NAME
+oxopen \- open file in olive
+.SH SYNOPSIS
+.B oxopen
+[
+.I file ...
+]
+.SH DESCRIPTION
+.I Oxopen
+opens
+.I file
+in
+.IR ox (1).
+If no files are given, the estandar input
+is open in a temporary file instead.
+.SH SOURCE
+.B /rc/bin/oxopen
+.SH SEE ALSO
+.IR olive (1),
+.IR ox (1).

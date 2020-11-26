@@ -1,0 +1,130 @@
+.TH BLKS 2
+.SH NAME
+blks \- data blocks
+.SH SYNOPSIS
+.EX
+include "blks.m";
+blks := load Blks Blks->PATH;
+
+Blk: adt {
+	data:	array of byte;
+	rp:	int;
+	wp:	int;
+
+	read:	fn(b: self ref Blk, fd: ref Sys->FD, max: int): int;
+	blen:	fn(b: self ref Blk): int;
+	grow:	fn(b: self ref Blk, n: int);
+	put:	fn(b: self ref Blk, data: array of byte);
+	get:	fn(b: self ref Blk, cnt: int): array of byte;
+	dump:	fn(b: self ref Blk);
+};
+
+init:	fn();
+utflen:	fn(s: string): int;
+pstring:	fn(a: array of byte, o: int, s: string): int;
+gstring:	fn(a: array of byte, o: int): (string, int);
+p16:	fn(a: array of byte, o: int, v: int): int;
+g16:	fn(f: array of byte, i: int): int;
+p32:	fn(a: array of byte, o: int, v: int): int;
+g32:	fn(f: array of byte, i: int): int;
+p64:	fn(a: array of byte, o: int, v: big): int;
+g64:	fn(f: array of byte, i: int): big;
+dtxt:	fn(s: string): string;
+.EE
+.SH DESCRIPTION
+.I Blks
+provides support for data buffering. The
+.B Blk
+data type a block of data. It is organized as a single array of
+bytes along with a read pointer
+.BR Blks.rp ,
+and a write pointer
+.BR Blks.wp .
+Available data is kept between
+.B rp
+and
+.BR wp .
+There may be room to add more data starting at
+.BR wp .
+.PP
+.I Init
+should be called before using the module.
+.PP
+To create a new block, set all fields to null values.
+.PP
+.I Blk.blen
+returns the number of bytes available for reading in
+the array.
+.PP
+.I Blk.grow
+ensures that there are at least
+.I n
+bytes available for new data.
+The block may grow more than requested and
+data may be moved to remove any leading hole
+in the buffer.
+.PP
+.I Blk.put
+puts
+.I data
+in the block.
+.I Blk.get
+returns
+.I cnt
+bytes from the block. The user is responsible to check
+out that there are enough bytes available before trying to
+get them.
+.PP
+.I Blk.read
+can be used as a convenience to read data from a file
+descriptor into a block. At most
+.I max
+bytes are read.
+.PP
+Remaining functions are helpers used to pack and unpack
+basic data types in a portable format.
+.I Utflen
+is a convenience function that returns the number of bytes
+required to store a string in UTF-8.
+.PP
+.I Pstring
+stores
+.I s
+at offset
+.I o
+in the array
+.I a
+and returns the offset past the string.
+.I Gstring
+retrieves a string from
+.I a
+and returns both the string and the offset
+past the string.
+.PP
+Functions
+.IR P16 ,
+.IR P32 ,
+and
+.I P64
+put 16, 32, and 64 bits in little endian order
+into an array of bytes. They accept the
+offset
+.I o
+where to put the integer and return the
+offset
+past the integer.
+.IR G16 ,
+.IR g32 ,
+and
+.IR g64
+are the counterparts, and unpack
+16, 32, and 64 bits integers from
+an array of bytes at a given offset.
+They return the integer unpacked.
+.PP
+.I Dtxt
+returns a short version of
+.I s
+suitable for debug diagnostics.
+.SH SOURCE
+.B /usr/octopus/port/lib/blks.b

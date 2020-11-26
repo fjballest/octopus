@@ -1,0 +1,35 @@
+MODDIR=$OCTOPUS/module
+BINTARG=${TARG:%=$DISBIN/%}
+SYS_MODULE=${SYSMODULES:%=$MODDIR/%}
+LIMBOFLAGS=-I$MODDIR
+
+all:V:		$TARG
+
+install:V:	$TARG $BINTARG
+
+installall:V:	install
+
+clean:V: 	clean-std
+
+nuke:V:		nuke-std
+
+$DISBIN/%.dis:	%.dis
+	cp $stem.dis $DISBIN/$stem.dis
+	cp $stem.sbl $DISBIN/$stem.sbl
+
+%.dis:		$MODULES $SYSMODULES
+
+%.dis:		%.b
+	limbo $LIMBOFLAGS -gw $stem.b
+
+%.s:		%.b
+	limbo $LIMBOFLAGS -w -G -S $stem.b
+
+%.install:V:	$DISBIN/%.dis
+%.installall:V:	$DISBIN/%.dis
+
+clean-std:V:
+	rm -f *.dis *.sbl
+
+nuke-std:V:	clean-std
+	cd $DISBIN; rm -f $TARG

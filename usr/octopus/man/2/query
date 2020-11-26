@@ -1,0 +1,28 @@
+.TH QUERY 2
+.SH NAME
+query \- octopus network service query module
+.SH SYNOPSIS
+.EX
+include "query.m";
+query := load Query Query->PATH;
+
+init:	fn(nil: ref Draw->Context, args: list of string);
+lookup: fn(what: list of string): (list of string, string);
+.EE
+.SH DESCRIPTION
+.I Query
+implements a
+.I lookup
+function to locate paths for resources matching attributes as specified by
+its
+.I what
+argument. The result is a list of paths for matching resources and
+an error string. The module is also a command as described in
+.IR query (1),
+which includes a description of special attribute values.
+.SH SOURCE
+.B /usr/octopus/port/lib/query.b
+.SH SEE ALSO
+.IR query (1)
+and
+.IR netget (2).

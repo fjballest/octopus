@@ -1,0 +1,37 @@
+.TH MVOICE 2
+.SH NAME
+mcamera \- machine dependent camera support
+.SH SYNOPSIS
+.EX
+include "mcamera.m";
+mcamera := load Mcamera Mcamera->PATH;
+
+init:		fn(): string;
+takejpg:	fn():  (array of byte, int);
+.EE
+.SH DESCRIPTION
+The function
+.I init
+initializes the module. Call it first.
+.PP
+.I Takejpg
+takes a photograph using the host system (e.g. apple's isight).
+First of all, it checks if the required mechanisms are installed in
+the host system.
+It returns an array of bytes containing a JPEG image. The size
+of the image is 640x480. It also returns the number of bytes
+in the array.
+.PP
+This is a host-dependent module. Refer to the source section to see
+the supported platforms. The file server
+.IR camera (4)
+uses this module.
+.SH SOURCE
+.B /usr/octopus/MacOSX/mcamera.b
+.SH BUGS
+Only for MacOSX. MacOSX version actually uses a command named
+isightcapture, that should be installed in the host system, in a directory
+included in the host's $PATH (e.g /usr/bin). This command can be 
+downloaded from http://www.intergalactic.de.
+An Inferno driver should be developed. 
+

@@ -1,0 +1,108 @@
+.TH XPROC 2
+.SH NAME
+xproc \- auxiliary processes
+.SH SYNOPSIS
+.EX
+include "xproc.m";
+xproc := load Xproc Xproc->PATH;
+
+Terminate : con -1;
+Shrink:	con -2;
+
+Proc: adt[T,R] {
+	serve:	ref fn(x: T): R;
+	flush:	ref fn(x: T): R;
+
+	init:	fn(p: self ref Proc[T,R]): (chan of (int, T, chan of R), chan of (int, chan of T));
+	...
+};
+.EE
+.SH DESCRIPTION
+.I Xproc
+implements a dynamic pool of auxiliary processes to apply a given function to
+a set of concurrent transaction requests. This pool is represented by a variable of type
+.BI Proc[ T , R ]
+that the client must
+instantiate with a reference to the transaction request adt and a
+reference to the reply adt. The implementation also uses
+.BI Proc[ T , R ]
+to represent each individual auxiliary process, but this is uninteresting for the client module.
+.PP
+Before using the process pool, the client must assign an appropriate function to
+.I Proc.serve .
+This function
+must return an appropriate reply for a given request. Also, if requests may be interrupted
+(as described below) a function that returns an appropriate reply to an interrupted (given)
+request must be assigned to
+.I Proc.flush .
+.PP
+After initializing
+.I Proc.serve
+and perhaps
+.I Proc.flush
+on the variable representing the pool
+the client module should call its
+.I Proc.init
+function.
+.PP
+.I Proc.init
+returns two channels: one to send requests to and one to send interrupt (flush) requests to.
+A request is made of a tuple consisting of an
+unique integer identifying the request, the request proper, and
+a channel where to send the reply. An interrupt request is made of a tuple consisting of
+the integer for the
+flushed/interrupted request and a channel where to send the flushed request (if any).
+.PP
+Both the request and reply types should be references. Because a single process is used
+to both receive requests and deliver replies, reply channels sent in requests should not
+block (they should have buffering or have a process receiving from them before further
+requests are sent).
+.PP
+The module arranges for each request to be processed by
+.I Proc.serve
+using an independent process. Processes are created on demand, but are never terminated.
+However, interrupting a request does kill the process that is processing it. At any moment
+the client may send a null request with the tag
+.I Shrink
+to terminate any auxiliary process idle at the time of the call. Sending a null request with tag
+.I Terminate
+terminates the module and all auxiliary processes.
+.PP
+When a request is interrupted
+.I Proc.flush
+is called to obtain its reply, which is sent to interrupted request reply channel (to signal its interrupt). A
+copy of the interrupted request is sent to the reply channel specified in the interrupt request.
+If the interrupted request does not exist (or was complete) a null reply is sent through the
+interrupt request reply channel.
+.SH EXAMPLE
+.EX
+xserve:	fn(t: ref Req): ref Rep;
+xflush:	fn(t: ref Req): ref Rep;
+
+# initialize
+p := ref Proc[ref Req, ref Rep];
+p.serve = xserve;
+p.flush = xflush;
+(rc, fc) := p.init();
+
+# send a request with tag 15
+repc := chan[1] of ref Rep;
+rc <-= (15, ref Req(...), repc);
+
+# flush it and get the flushed request
+flushedc := chan[1] of ref Req;
+fc <-= (15, flushedc);
+flushed := <-flushedc;
+
+# get the reply for request 15
+# (interrupted or not)
+rep := <- repc;
+
+# terminate operation
+rc <-= (Terminate, nil, nil);
+.EE
+.SH SOURCE
+.B /usr/octopus/port/lib/xproc.b
+.SH SEE ALSO
+.I "A concurrent Window System."
+Rob Pike. Computing Systems. 1989.

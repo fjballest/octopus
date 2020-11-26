@@ -1,0 +1,66 @@
+.TH SNARF 4
+.SH NAME
+snarf \- shared clipboard file system
+.SH SYNOPSIS
+.B o/snarf
+[
+.B \-abcd
+]
+[
+.B -m
+.I mnt
+]
+.B ...
+.SH DESCRIPTION
+.I Snarf
+is a file server that mounts itself above
+.B /chan
+to intercept I/O to
+.B /chan/snarf
+and maintain a shared clipboard. But note
+that it does not bind above
+.B /dev
+(so that
+.B /dev/snarf
+still refers to the local clipboard). The program
+assumes that
+.IR snarf (3)
+is already bound if needed.
+.PP
+The clipboard is kept at
+.B /mnt/snarf/buffer
+which is expected to be a file shared among
+the cooperating machines.
+.PP
+When
+.B /chan/snarf
+is written
+.I snarf
+updates the shared clipboard and the local
+one and then posts an event to
+.IR ports (4)
+with the string
+.B /mnt/snarf/buffer
+to let others know of the update.
+When
+.I snarf
+receives such event it reads the
+shared clipboard and updates the local one.
+.PP
+Flag
+.B -m
+can be used to ask
+.I snarf
+to mount itself at
+.IR mnt .
+Options
+.B -abc
+determine the mount flag, as in
+.IR bind (1).
+Flag
+.B -d
+is used to debug the program, and makes it very verbose.
+.SH SOURCE
+.B /usr/octopus/port/snarf.b
+.SH SEE ALSO
+.IR snarf (3)

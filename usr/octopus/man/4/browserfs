@@ -1,0 +1,24 @@
+.TH BROWSERFS 4
+.SH NAME
+browserfs \- web browser file system
+.SH SYNOPSIS
+.B o/browserfs
+[
+.B -d
+.B -m
+.I mnt
+]
+.B ...
+.SH DESCRIPTION
+.I Browserfs
+is a file system to control the host's web browsers and to capture
+its state. Browserfs
+serves
+a directory with a  four files: ctl, bookmarks, history, and open.
+.PP
+
+
+.SH SOURCE
+.B /usr/octopus/port/browserfs.b
+.SH SEE ALSO
+.IR borwsercmd (2)

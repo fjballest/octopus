@@ -1,0 +1,116 @@
+.TH INTRO 1
+.SH NAME
+intro \- introduction to the Octopus
+.SH DESCRIPTION
+The
+.I octopus
+is a system built to achieve a distributed computing system by using a centralized one. The idea
+is that all the applications run at a single, central, computer. Users connect devices found in
+the Internet (probably attached to full-fledged computers) to their (remote) central computer, so that
+they do not have to carry hardware around, yet they see a single, homogeneous, reliable system.
+Even while using a distributed, heterogeneous, and dynamic environment.
+.PP
+The octopus inherits most ideas from Plan B and therefore from Plan 9 and Inferno.
+Thus, it would be appropriate to read the
+.IR intro (1)
+manual page from Inferno before proceeding with this one. See also
+.BR http://lsub.org/ls/octopus.html .
+.PP
+The octopus
+mounts file systems across network links with
+bad latency, that is, links exhibiting RTT times from 50 to 120 milliseconds. Such links
+are used to connect devices (found in the Internet) to the central PC.
+.PP
+A machine providing one or more devices to the central computer is known as a
+.IR terminal .
+The central computer is known as the
+.I "personal computer
+or the
+.IR PC ,
+and
+provides a central name space to
+.IR terminals .
+Both the
+.I PC
+and
+.I terminals
+run
+.I "file servers"
+to
+provide services to be mounted on the other end of the link. Terminals and PCs
+cooperate using the
+.I Op
+file protocol, described in section
+.I O
+of this manual. Only in particular cases do they use Styx to talk to each other.
+.PP
+Usually, two (network) connections are set up between the
+.I PC
+and a
+.I terminal
+in the octopus. In one of them, the
+.I PC
+is a
+.I client
+(for terminal devices)
+and the
+.I terminal
+is a
+.IR server .
+In the other, the roles are exchanged.
+But note that for the octopus
+implementation in Inferno, Styx is used within the central computer, and also within
+any terminal using Inferno. However, servers in the terminal speaking to clients in
+the central computer do so using
+.IR Op ,
+and the same happens for exporting the central computer name space to terminal devices.
+.PP
+The computing environment as seen by the user is that of the central computer. In the
+current implementation, it would be an Inferno computing environment or perhaps a Plan 9
+computing environment. It depends on which machine is designated as the central computer and
+which software does it run.
+.PP
+The central computer is implemented by an Inferno system running the
+.B o/pcrc
+start-up script, described in
+.IR pcrc (1).
+This script starts listeners providing network services expected at the PC, and makes the PC
+able to import terminal devices and to export a central name space. The central computer adapts
+to changes in device availability. This way, the central name space changes depending on the
+set of devices available and the name space as configured by the user. See
+.IR mux (4)
+and
+.IR netget (1)
+for a description of what this means.
+.PP
+A terminal in the present implementation is an Inferno system running the
+.B o/termrc
+start-up script. But note that any machine following the conventions for terminals would
+be a terminal. In particular, a machine exporting through
+.I Op
+one or more devices would be a perfect terminal. User I/O happens at terminals, the central
+computer runs applications instead.
+.PP
+In the implementation for Inferno,
+.B /dis/o
+contains portable (Dis) binaries for the octopus. This manual includes just those manual pages
+that must be added to an Inferno user's manual to convert it to an Octopus user's manual. Section
+1 describes commands implemented for the octopus, section 2
+describes Limbo modules for the octopus, section 4 describes file servers, and section O describes
+the file protocol used to glue the system together. But note that usually, all file servers in the octopus
+are Styx (i.e., Inferno) file servers. Only
+.IR oxport (4)
+and
+.IR ofs (4)
+need to speak Op, when Inferno is being used on both terminals and the PC.
+.PP
+On each manual page, the
+.I Platform
+section describes which platform the command or module is meant for. This
+is needed because some commands may be implemented only for certain hosts
+or terminals. When this section is missing, the command or module is
+considered portable enough to run at any supported platform.
+.SH SEE ALSO
+.IR intro (O),
+.BR http://lsub.org/octopus ,
+and various papers mentioned there.

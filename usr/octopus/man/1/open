@@ -1,0 +1,74 @@
+.TH OPEN 1
+.SH NAME
+o/open \- open files
+.SH SYNOPSIS
+.B o/open
+[
+.B -d
+]
+
+.SH DESCRIPTION
+.I Open
+listens for events posted by
+.IR ox (1)
+via
+.IR ports (4)
+to see if the user tries to look for something.
+For each string the user is looking that matches
+an entry in its configuration file,
+.I open
+executes the corresponding command. This is
+a portable replacement for
+.IR plumber (4)
+in the Octopus.
+.PP
+The configuration file is kept at
+.B $home/lib/open
+and contains one entry per line. Each entry
+has a regular expression, a tabulator, and
+a command line, perhaps using references
+to sub-expressions in the style of
+.IR sed (1).
+The regular expression determines if the string the
+user is looking for matches the configuration entry
+or not. Matching is case-insensitive.
+.PP
+.I Open
+would reload its configuration when asked to
+look for
+.LR !reload .
+Thus, typing that string and trying to open it
+as a file from
+.IR ox (1)
+makes
+.I open
+reload its configuration file. But beware that
+it aborts upon fatal errors regarding configuration.
+.SH EXAMPLE
+This is an example configuration file to send
+URLs to the host web browser.
+.EX
+# send urls to the view device
+http://.*	echo \0 >/mnt/view/open.url
+# send manual pages as stdin to `oxopen' in the
+# host system, to make ox(1) show them
+([a-z0-9]+)\(([0-9]+)\)	os rc -c 'man  \2 \1 | oxopen' </dev/null 
+.EE
+.SH SOURCE
+.B /usr/octopus/port/open.b
+.SH FILES
+.B $home/lib/open
+.SH BUGS
+The name space is that of the Inferno at the PC,
+and therefore it is not trivial to write rules that
+refer to names in the underlying OS name space, that is,
+.B /mnt/fs
+must be used to let the Inferno command reach host files.
+The command should do that by itself (perhaps under a
+.B -9
+flag).
+.PP
+Relative paths are not (yet) handled correctly.
+
+
+

@@ -1,0 +1,7 @@
+#!/dis/sh -n
+load std
+o/ports
+o/mero
+mkdir /mnt/ui/s0
+o/x
+o/live s0

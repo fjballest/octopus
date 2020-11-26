@@ -1,0 +1,91 @@
+.TH MUX 4
+.SH NAME
+mux \- file system multiplexor with fail over support
+.SH SYNOPSIS
+.B o/mux
+[
+.B -abcd
+]
+[
+.B -m
+.I mnt
+]
+.I attr
+.I val
+.B ...
+.SH DESCRIPTION
+.I Mux
+serves
+a name space coresponding to any resource registered using
+.IR registry (4)
+that matches attributes and values specified by
+.I attr
+and
+.I val
+arguments, including special values described in
+.IR query (1).
+By default, it speaks Styx in the standard input, for use with
+.IR mount (1)
+as in the example. Flag
+.B -m
+can be used to ask
+.I mux
+to mount itself at
+.IR mnt .
+Options
+.B -abc
+determine the mount flag, as in
+.IR bind (1).
+.PP
+.I Mux
+assumes that, for each registered resource, an attribute with name
+.B path
+contains an absolute path for reaching its root directory in the current
+name space. It simply picks one of the matching resources and serves
+(using Styx) its file tree. Note that the convention in the Octopus is that
+the registry contains paths valid on the PC Inferno's namespace. Terminals
+and host systems namespaces may differ.
+.PP
+Upon failures (eg., I/O errors) of the resource,
+.I mux
+switches over to any other resource also matching the attributes.
+.PP
+Upon failure, open fids for the failing resource report I/O error to the client
+process(es). However, any other fids are switched to use files in the new
+resource used. Qids are rewritten by
+.I mux
+so that
+.IR bind (2)
+could be used, and caching of multiplexed files still works.
+.PP
+Flag
+.B -d
+is used to debug the program, and makes it very verbose.
+.SH EXAMPLE
+Given this registry,
+leave at
+.B /n/who
+any resource named
+.B who
+that works. Also, mount at
+.B /n/uwho
+any such resource, as long as its known location is
+the same known for the user, as reported in
+.BR /n/who/$user/where .
+.EX
+% cat /mnt/registry/index
+pc!where arch Plan9386 loc none path /term/pc/where name where
+pc!who arch Plan9386 loc none path /term/pc/who name who
+pc!what arch Plan9386 loc none path /term/pc/what name what
+Atlantian.local!who loc home path /term/Atlantian.local/who name who
+Atlantian.local!what loc home path /term/Atlantian.local/what name what
+% mount -Ac {o/mux name who} /n/who
+% o/mux -m /n/uwho name who loc '$user'
+.EE
+.SH SOURCE
+.B /usr/octopus/port/mux
+.SH SEE ALSO
+.IR namespace (4),
+.IR netget (1),
+and
+.IR pcns (1).

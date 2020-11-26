@@ -1,0 +1,418 @@
+.TH INTRO O
+.SH NAME
+intro \- introduction to the Octopus File Protocol
+.SH DESCRIPTION
+The octopus mounts file systems across network links with
+bad latency. Links exhibiting RTT times from 50 to 120 milliseconds
+are common. Such links connect octopus
+.I terminals
+to a central computer or
+.IR PC .
+A
+.I terminal
+in the octopus is a machine providing devices and other services
+to the
+.IR PC .
+The
+.I PC
+provides a central name space to
+.IR terminals .
+Both the
+.I PC
+and
+.I terminals
+run
+.I "file servers"
+to
+provide services to be mounted on the other end of the link.
+The
+.I Styx
+protocol (described in section 5) requires too many RPCs to be comfortable for
+interactive usage across such links, and this protocol along with
+.IR ofs (4)
+and
+.IR oxport (4)
+provides a mean to bridge Styx
+.I islands
+to require fewer RPCs between them. This section describes the protocol, and how
+it maps to Styx requests and file system calls.
+.PP
+The
+.IR "Octopus File Protocol" ,
+.IR Op ,
+is a network file system protocol used in the octopus for messages between
+.I clients
+and
+.IR servers ,
+when bad latency links connect clients to servers. In
+.I Op
+a process called a
+.I client
+talks to a process called a
+.IR server .
+The
+.I server
+is a process that provides one hierarchical file system, or
+.I "file tree
+that may be accessed by remote
+.I client
+processes.
+The server responds to requests from
+.I clients
+to create, remove, put, and get files.
+The prototypical server is one that exports a subtree of its own name space.
+Perhaps, part of the tree corresponds to
+.I Styx
+servers that synthesize
+files on demand, perhaps based on information on data structures or
+by interfacing to an external device or to the native operating system
+underneath the octopus, hence Inferno, at a particular computer.
+.PP
+Usually, two (network) connections are set up between the
+.I PC
+and a
+.I terminal
+in the octopus. In one of them, the
+.I PC
+is a
+.I client
+(for terminal devices)
+and the
+.I terminal
+is a
+.IR server .
+In the other, the roles are exchanged.
+But note that even for the octopus
+implementation in Inferno, Styx is used within the central computer, and also within
+any terminal using Inferno. However, servers in the terminal speaking to clients in
+the central computer do so using
+.IR Op ,
+and the same happens for exporting the central computer name space to terminal devices.
+.PP
+There may be a single client or
+multiple clients sharing the same connection to an
+.I Op
+server, but all of the clients must operate on
+behalf of the same user.
+.PP
+Op follows the design of 9P (or Styx), including its convention for
+packaging messages for transmission over the connection. 
+In Op, a client transmits
+.I requests
+.RI ( T-messages )
+to a server, which
+subsequently returns
+.I replies
+.RI ( R-messages )
+to the client. 
+The combined acts of transmitting (receiving) a request of a particular type,
+and receiving (transmitting)
+a reply for that request is called
+.I transaction
+or an
+.I RPC
+of that type.
+.PP
+But note that there may be more than a single reply message
+for a given request. In particular,
+.IR get (O)
+may ask the server to reply with several messages. In this case, the
+transaction finishes when all replies have been received (transmitted).
+.PP
+Each message consists of a sequence of bytes.
+Two-, four-, and eight-byte fields hold unsigned
+integers represented in little-endian order
+(least significant byte first).
+Data items of larger or variable lengths are represented
+by a two-byte field specifying a count,
+.IR n ,
+followed by
+.I n
+bytes of data.
+Text strings are represented this way,
+with the text itself stored as a UTF-8
+encoded sequence of Unicode characters (see
+.IR utf (6)).
+Text strings in Op messages are not
+null-terminated:
+.I n
+counts the bytes of UTF-8 data, which include no final zero byte.
+The
+.SM NUL
+character is illegal in all text strings in Op, and is therefore
+excluded from file names, user names, and so on.
+.PP
+Each Op message begins with a four-byte size field
+specifying the length in bytes of the complete message including
+the four bytes of the size field itself.
+The next byte is the message type, one of the constants
+in the module
+.IR op (2).
+The next two bytes are an identifying
+.IR tag ,
+described below.
+The remaining bytes are parameters of different sizes.
+In the message descriptions, the number of bytes in a field
+is given in brackets after the field name.
+The notation
+.IR parameter [ n ]
+where
+.I n
+is not a constant represents a variable-length parameter:
+.IR n [2]
+followed by
+.I n
+bytes of data forming the
+.IR parameter .
+The notation
+.IR string [ s ]
+(using a literal
+.I s
+character)
+is shorthand for
+.IR s [2]
+followed by
+.I s
+bytes of UTF-8 text.
+Messages are transported in byte form to allow for machine independence.
+.SH MESSAGES
+.PP
+The following messages are defined in the current version of the protocol.
+Following manual pages in this section document them. Refer to
+.IR op (2)
+for a module providing a Limbo interface.
+.ta \w'\fLTsession 'u
+.IP
+.ne 2v
+.IR size [4]
+.B Rerror
+.IR tag [2]
+.IR ename [ s ]
+.IP
+.ne 2v
+.IR size [4]
+.B Tattach
+.IR tag [2]
+.IR uname [ s ]
+.IR path [ s ]
+.br
+.IR size [4]
+.B Rattach
+.IR tag [2]
+.IP
+.ne 2v
+.IR size [4]
+.B Tflush
+.IR tag [2]
+.IR oldtag [2]
+.br
+.IR size [4]
+.B Rflush
+.IR tag [2]
+.IP
+.ne 2v
+.IR size [4]
+.B Tput
+.IR tag [2]
+.IR path [ s ]
+.IR fd [2]
+.IR mode [2]
+.IR stat [ n ]
+.IR offset [8]
+.IR count [4]
+.IR data [ count ]
+.br
+.IR size [4]
+.B Rput
+.IR tag [2]
+.IR fd [2]
+.IR count [4]
+.IR qid [13]
+.IR mtime [4]
+.IP
+.ne 2v
+.IR size [4]
+.B Tget
+.IR tag [2]
+.IR path [ s ]
+.IR fd [2]
+.IR mode [2]
+.IR nmsgs [2]
+.IR offset [8]
+.IR count [4]
+.br
+.IR size [4]
+.B Rget
+.IR tag [2]
+.IR fd [2]
+.IR mode [2]
+.IR stat [ n ]
+.IR count [4]
+.IR data [ count ]
+.br
+.IP
+.IR size [4]
+.B Tremove
+.IR tag [2]
+.IR path [ s ]
+.br
+.IR size [4]
+.B Rremove
+.IR tag [2]
+.PP
+Each T-message has a
+.I tag
+field, chosen and used by the client to identify the message.
+The reply to the message will have the same tag. When a
+.I Tget
+request
+demands more than one reply, all replies must have the same
+.I tag
+field (and are considered as a single reply, made of multiple messages).
+Clients must arrange that no two outstanding messages
+on the same connection have the same tag.
+.PP
+The type of an R-message will either be one greater than the type
+of the corresponding T-message or
+.BR Rerror ,
+indicating that the request failed.
+In the latter case, the
+.I ename
+field contains a string describing the reason for failure.
+.PP
+Each RPC is considered to be atomic with respect to its execution in the
+server. There is a limit on the ammount of data that may be sent in Op in a single
+request (or reply). No single message may carry more than
+.B MAXDATA
+bytes in the
+.B data
+field, as defined in
+.B op.m
+(this puts a limit on the maximum message size, assuming a reasonable
+maximum size for
+.B stat
+in messages carrying it).
+Nevertheless,
+.I Tget
+requests permit multiple messages for each reply, as said in
+.IR get (O).
+.PP
+The
+.B attach
+request
+identifies the user
+to the server. Permission checking and authentication must take place prior to
+this transaction. The server must not respond any other request before accepting an
+Attach RPC.
+.PP
+Files can be created (and directories) and their contents (and metadata) updated
+by means of
+.B put
+messages. They are removed by means of
+.B remove
+requests. File contents may be obtained (and their metadata) by means of
+.B get
+requests.
+.PP
+The
+.B flush
+request is meant to abort a previous, outstanding, request. It
+is used to abort ongoing transactions.
+.PP
+Everything else is similar to 9P or STYX, in particular, file metadata is exactly that
+used by STYX.
+.SH NAMES AND DESCRIPTORS
+Most T-messages request that an operation be made for a file.
+Usually, the file is identified by the
+.I path
+field of the T-message. The
+.I path
+file contains a string with
+a file name or path (rooted at the server's root directory). 
+The path follows the UNIX (or
+Inferno or Plan 9) convention for file names. For example,
+.B /a/b
+means the file
+.B b
+inside the directory
+.B a
+inside the root of the server's file tree. Only absolute paths are meaningful
+for Op. Servers should refuse to accept relative paths. Clients should never send them
+inside a request. For example, the name for the root directory of the file tree
+in the server must be
+.B /
+(as it could be expected).
+.PP
+However, as said in
+.IR put (O)
+and
+.IR get (O),
+both Tput and Tget may identify the file using the
+.B fd
+field, which contains a small integer that represents a
+.I "file desriptor
+to the file. This descriptor is to be considered a
+.I cache
+of the
+.I path
+mentioned in the
+.B path
+field. When a valid descriptor is sent in a Tget (or a Tput) the server
+ignores the
+.I path
+and uses
+.I fd
+to identify the file to be used for the operation. If the
+.I fd
+is invalid, the file server uses
+.I path
+instead.
+The special value
+.B NOFD
+(~0) makes this field void and represents a null descriptor.
+.PP
+.I "File descriptors
+are numbers chosen by the server. They are allocated upon request. A client
+may specify in a Tget or Tput request that more requests of the same type
+will follow. In that case,
+the server must allocate a valid (unique) descriptor and send it back to the client
+in the R-message. The client may use the received descriptor for further requests,
+and the server must use it to operate on the file. When the client issues the last request
+(or the client the last reply) the descriptor is deallocated an
+.B NOFD
+is sent as
+.B fd
+in the reply. Note that the client must issue one last request to cause the descriptor to be
+deallocated.
+You may refer to
+.IR get (O)
+for an example.
+.PP
+When the
+.I Op
+server relies to Styx file servers (like
+.IR oxport (4)
+does), it must assign a fid (or a file descriptor) for each descriptor allocated for
+.I Op
+as described above. This means that a Styx server may still know when a client reaching
+the server across an
+.I Op
+link ceases to use the file. However, note that
+.I Op
+file descriptors are not
+.I fids
+and that a close (or clunk) on a file may cause an
+.I Op
+descriptor to be closed, even if other clients still have the file open. Note also that descriptors
+are unique for read or write access. That is,
+.I Op
+.I fds
+are allocated either for Put RPCs or for Get RPCs. A file being used both to read and to write would
+use two different
+.I Op
+file descriptors.
+.SH SEE ALSO
+.IR intro (2),
+.IR styx (2).
+.SH BUGS
+Still a child, hence doing nasty things and evolving quickly.

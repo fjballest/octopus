@@ -1,0 +1,24 @@
+TARG=\
+	nopi.dis\
+	cache.dis\
+	nopmux.dis\
+	ssrv.dis\
+	tree.dis\
+
+MAIN=nopi
+
+MODULES=\
+
+
+SYSMODULES=\
+	../../module/nop.m\
+	../../module/blks.m\
+	../../module/error.m\
+	../../module/io.m\
+	../../module/netutil.m\
+
+DISBIN=/dis/o/nopi
+
+<../mkdis
+<../mkdismain
+

@@ -1,0 +1,39 @@
+# pdf, ps, ... files sent to /term/view
+kind is text
+data matches '([.a-zA-Z0-9_/]+\.pdf|ps|PDF|PS|gif|jpg|jpeg|JPG|GIF|bmp)'
+data isfile	$1
+data set $file
+plumb to view
+plumb start /dis/cp.dis $1 /term/view
+
+
+
+# .m files are looked up in /module and passed to edit
+kind is text
+data matches '([.a-zA-Z0-9_/]+\.m)(:[0-9]+)?'
+arg isfile	$1
+data isfile	/module/$1
+data set	/module/$0
+plumb to edit
+plumb start /dis/acme.dis $file$2
+
+# existing files, possibly tagged by line number, go to editor
+kind is text
+data matches '([.a-zA-Z0-9_/]+)(:[0-9]+)?'
+data isfile	$1
+data set	$file
+plumb to edit
+plumb start /dis/acme.dis $file$2
+
+# terminal events, octopus
+kind is text
+data matches 'arrived: ([a-z0-9._/]+)'
+plumb to netget
+plumb start /dis/echo.dis new $1
+
+
+kind is text
+data matches 'gone: ([a-z0-9._/]+)'
+plumb to netget
+plumb start /dis/echo.dis gone $1
+

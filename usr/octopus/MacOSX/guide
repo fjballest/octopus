@@ -1,0 +1,16 @@
+Simple things that can be added:
+
+cd/dvd burning, via drutil(1)
+mp3player: view supports opening mp3, but using scripts to control itunes
+	would be better.
+avi player: again, view supports opening avis, but scripts to control the player
+	and provide a better interface would be better. The interface could probably
+	be then same used for audio:
+
+- spool of audio/video files
+- play [name, time]
+- next, prev
+- fwd rev
+- stop
+
+office to pdf converter

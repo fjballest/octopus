@@ -1,0 +1,33 @@
+<HEAD>
+<TITLE>Octopus User Manual (O)</TITLE>
+</HEAD>
+<BODY>
+<B>[<A HREF="/sys/oman/index.html">Index</A>]</B>
+<H2>Octopus Protocol (2nd ed.)</H2>
+<HR>
+<DL>
+<DT><A HREF="/magic/oman2html/O/0intro">0intro</A>
+-  introduction to the Octopus File Protocol Most T-messages request that an operation be made for a file. Usually, the file is identified by the path field of the T-message. The path file contains a string with a file name or path (rooted at the server's root directory). The path follows the UNIX (or Inferno or Plan 9) convention for file names. For example, /a/b means the file b inside the directory a inside the root of the server's file tree. Only absolute paths are meaningful for Op. Servers should refuse to accept relative paths. Clients should never send them inside a request. For example, the name for the root directory of the file tree in the server must be / (as it could be expected). However, as said in put (O) and get (O), both Tput and Tget may identify the file using the fd field, which contains a small integer that represents a "file desriptor to the file. This descriptor is to be considered a cache of the path mentioned in the path field. When a valid descriptor is sent in a Tget (or a Tput) the server ignores the path and uses fd to identify the file to be used for the operation. If the fd is invalid, the file server uses path instead. The special value NOFD (~0) makes this field void and represents a null descriptor. "File descriptors are numbers chosen by the server. They are allocated upon request. A client may specify in a Tget or Tput request that more requests of the same type will follow. In that case, the server must allocate a valid (unique) descriptor and send it back to the client in the R-message. The client may use the received descriptor for further requests, and the server must use it to operate on the file. When the client issues the last request (or the client the last reply) the descriptor is deallocated an NOFD is sent as fd in the reply. Note that the client must issue one last request to cause the descriptor to be deallocated. You may refer to get (O) for an example. When the Op server relies to Styx file servers (like oxport (4) does), it must assign a fid (or a file descriptor) for each descriptor allocated for Op as described above. This means that a Styx server may still know when a client reaching the server across an Op link ceases to use the file. However, note that Op file descriptors are not fids and that a close (or clunk) on a file may cause an Op descriptor to be closed, even if other clients still have the file open. Note also that descriptors are unique for read or write access. That is, Op fds are allocated either for Put RPCs or for Get RPCs. A file being used both to read and to write would use two different Op file descriptors. intro (2), styx (2). Still a child, hence doing nasty things and evolving quickly.
+<DD><TT> intro</TT>
+</DT>
+<DT><A HREF="/magic/oman2html/O/attach">attach</A>
+-  messages to establish a connection
+<DD><TT> attach</TT>
+</DT>
+<DT><A HREF="/magic/oman2html/O/flush">flush</A>
+-  flush a previous request
+<DD><TT> flush</TT>
+</DT>
+<DT><A HREF="/magic/oman2html/O/get">get</A>
+-  retrieve a file
+<DD><TT> get</TT>
+</DT>
+<DT><A HREF="/magic/oman2html/O/put">put</A>
+-  update a file
+<DD><TT> put</TT>
+</DT>
+<DT><A HREF="/magic/oman2html/O/remove">remove</A>
+-  remove a file
+<DD><TT> remove</TT>
+</DT>
+</DL>

@@ -1,0 +1,82 @@
+.TH SPOOLER 2
+.SH NAME
+spooler, view, print \- file spooler module interface for use with spool
+.SH SYNOPSIS
+.EX
+include "spooler.m";
+sppoler := load Spooler MOD->PATH;
+
+Sfile: adt {
+	fd:	ref Sys->FD;	# avail to be used by spooler
+	sval: string;		# avail to be used by spooler
+
+	start:		fn(path: string, endc: chan of string): (ref Sfile, string);
+	stop: 	fn(file: self ref Sfile);
+	status:	fn(file: self ref Sfile): string;
+};
+
+init:		fn(args: list of string);
+status:	fn(): string;
+debug:	int;
+.EE
+.SH DESCRIPTION
+A
+.I spooler
+is a module that implements this interface. It is intented to be given as an argument for
+.IR spool (4),
+which is a file server that implements the spooling interface seen by the user.
+.PP
+Each file being spooled is represented by a
+.BR Sfile .
+The function
+.I Sfile.start
+is called to start spooling for a file with a
+.I path
+name. The function must send either
+.B nil
+or an error string through
+.I endc
+when the file has been processed. But note that
+.I endc
+may be
+.B nil
+and nothing has to be sent in that case.
+The function must return an appropriate
+.B Sfile
+containing what is needed to implement
+.I Sfile.stop
+and
+.I Sfile.status .
+Both
+.B Sfile.fd
+and
+.B Sfile.sval
+are available for internal use of the module implementor.
+.PP
+.I Sfile.stop
+must stop processing the file, and release any resource held for its
+processing.
+.PP
+.I Sfile.status
+must return a string with the status for the spool request corresponding to
+the file.
+.PP
+.I Status
+must return a string (perhaps multiple lines) with the status of the spooling service.
+.PP
+The global
+.B debug
+will be set to either zero or non-zero from outside to ask debug diagnostics when set.
+.PP
+Clients must call
+.I init
+before calling any other service from a
+.I Spooler
+module
+.SH EXAMPLE
+See
+.B /usr/octopus/port/lib/view.b
+or
+.B /usr/octopus/MacOSX/print.b
+.SH SEE ALSO
+.IR spool (4).

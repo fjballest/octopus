@@ -1,0 +1,35 @@
+% o/dav -dd
+dav: new client: /net/tcp/4 for /
+req: options /a/b/c/ http/1.1
+host: localhost:9999
+connection: keep-alive
+content-length: 0
+accept: */*
+user-agent: WebDAVFS/1.5 (01508000) Darwin/9.2.2 (i386)
+
+rep: HTTP/1.1 200 ok
+Content-length: 0
+DAV: 1
+Date: Sun May 04 17:07:38 BST 2008
+Server: o/dav
+
+req: propfind /a/b/c/ http/1.1
+host: localhost:9999
+connection: keep-alive
+content-length: 161
+depth: 0
+content-type: text/xml
+accept: */*
+user-agent: WebDAVFS/1.5 (01508000) Darwin/9.2.2 (i386)
+
+<?xml version="1.0" encoding="utf-8"?>
+<dav:propfind xmlns:D="DAV:">
+	<dav:prop>
+		<dav:getlastmodified/>
+		<dav:getcontentlength/>
+		<dav:resourcetype/>
+	</dav:prop>
+</dav:propfind>
+dav: putrep: file does not exist
+dav: client /net/tcp/4 gone
+sh: 4589 "Dav":killed

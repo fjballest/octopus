@@ -1,0 +1,48 @@
+.TH ATTACH O 
+.SH NAME
+attach \- messages to establish a connection
+.SH SYNOPSIS
+.ta \w'\fLTauth 'u
+.IR size [4]
+.B Tattach
+.IR tag [2]
+.IR uname [ s ]
+.IR path [ s ]
+.br
+.IR size [4]
+.B Rattach
+.IR tag [2]
+.SH DESCRIPTION
+.PP
+The
+.B attach
+message reports the user responsible for the connection to the file server, and
+picks a particular subtree of the server's file tree.
+Future transactions are performed on behalf of that user. In such transactions, the path
+named
+.B /
+corresponds to the file identified by the
+.B path
+field in this transaction. Usually,
+.B /
+is used to attach to the entire tree.
+.PP
+This transaction may be used only once, prior to any further communication
+through the channel. Servers must refuse to attand any other transaction until receiving this one.
+
+.PP
+Authentication is outside the protocol, and should determine that
+.I uname
+corresponds indeed to the user holding that user name.
+.SH ENTRY POINTS
+An
+.B attach
+transaction will be generated exactly once, while mounting an Op file server.
+.SH SEE ALSO
+.IR bind (2).
+.SH BUGS
+The
+.B path
+field is not implemented by the only server implemented that speaks
+this protocol.
+

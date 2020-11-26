@@ -1,0 +1,326 @@
+.TH OX 1
+.SH NAME
+ox \- omero editor and shell
+.SH SYNOPSIS
+.PP
+.B o/x
+[
+.B -9dnp
+]
+[
+.B -o
+.I odir
+]
+[
+.B -l
+.I ldir
+]
+[
+.B -i
+.I initcmd
+]
+.SH DESCRIPTION
+.I O/x
+is a
+program
+that implements a shell to browse the file system, edit, and
+execute commands while using
+.IR o/mero .
+Flag
+.B -d
+activates debug diagnostics and option
+.B -o
+can be used to select
+.B odir
+instead of
+.B /mnt/ui
+as the root directory for the window system.
+Flag
+.B -l
+can be used to ask
+.I o/x
+to load an already existing interface found at directory
+.I ldir
+instead of
+creating its own. The interface should come from a
+previous instance of
+.I o/x
+(e.g., by using
+.IR tar (1)
+to save and restore it). See the example below.
+.PP
+In many cases,
+.I o/x
+runs under flag
+.B -9
+causing all file names to be interpreted in the
+host underlying Inferno (expected at
+.BR /mnt/fs )
+and all commands to be executed by the host
+system.
+As an optimization, flag
+.B -n
+may be used when the Inferno used does not
+call
+.IR rfork (2)
+using the
+.B RFNAMEG
+flag for executing host commands. That is the
+case at Lsub.
+.PP
+Flag
+.B -p
+makes
+.I o/x
+persist, so it re-spawns a new instance of the program
+after it dies. This is used to make sure that there is always
+a shell program running at the PC.
+.PP
+Flag
+.B -i
+makes
+.I o/x
+run
+.I initcmd
+as if it was executed on the tag line of the initial directory
+shown.
+.PP
+For the most part,
+.I o/x
+can be handled via the
+.I o/mero
+tag and panel commands described
+in
+.IR olive (1).
+Besides,
+.I o/x
+includes its own command language consisting of
+builtin commands, Sam commands, host commands,
+and inferno commands. Beware that unlike other editors
+in Plan 9 and Inferno,
+.I o/x
+applies the commands to the user selection (determined
+by the last text panel where the used mouse button 1,
+as explained in
+.IR olive (1)).
+.PP
+Host commands are commands executed by the host
+system underlying Inferno (eg., Plan 9). Inferno commands
+are commands executed by the Inferno system where
+.I o/x
+runs. Edition commands are similar to those of the Sam
+editor, and builtin commands
+are any of the following ones:
+.PP
+.TF "Dup screen
+.TP
+.BI Ctl " ctl
+Executes the control request
+.I ctl
+on the text panel of the last user selection. See
+.IR omero (4)
+for the full list.
+.TP
+.B Cmds
+Shows the list of commands that have not yet finished.
+.TP
+.BI Dup " screen
+(understood at the directory panel shown by
+.IR o/x )
+creates a new directory panel to browse the file system.
+The optional
+.I screen
+names the screen where the new panel is to be shown.
+Panels for files (and directories without the
+.I screen
+argument) are shown in the screen of the directory panel
+used to open them.
+If the
+.I screen
+does not exist in
+.I o/mero
+it is created before showing the new directory panel on it.
+.TP
+.B Edit
+Makes the buffer consider that commands executed on it are Sam commands
+by default.
+.TP
+.B Rc
+Makes the buffer consider that commands executed on it are host commandsferno
+by default (i.e.,
+.IR rc (1)
+commands on Plan 9).
+.TP
+.B Sh
+Makes the buffer consider that commands executed on it are Inferno commands
+by default (i.e.,
+.IR sh (1)
+commands).
+.TP
+.B End
+Terminates the program.
+.TP
+.B Keep
+prevents
+.I o/x
+for automatically closing the panel when too many
+panels are open.
+.TP
+.B Scroll
+Toggles the default behaviour regarding
+scrolling for new output panels.
+.PD
+.PP
+A command is considered a Sam command by default,
+unless preceded
+by a
+.LR % ,
+a
+.LR ! ,
+or a
+.L ;
+sign:
+.TF "%cmd ...
+.TP
+.I "cmd ...
+Executes
+the Sam command
+.IR cmd .
+.TP
+.BI % "cmd...
+Executes the Inferno command
+.IR cmd .
+.TP
+.BI ; "cmd ...
+Executes the host command
+.IR cmd .
+.TP
+.BI ! "cmd ...
+Executes
+.I cmd
+at the host when
+.I o/x
+is under flag
+.B -9
+and at  Inferno otherwise. This is the most used
+idiom, and executes the commands in the system
+where the files being browsed reside.
+.PD
+.PP
+See
+.IR sam (1)
+for a description of the language. The commands
+.LR b ,
+.LR k ,
+.LR q ,
+.LR u ,
+and
+.L !
+are not implemented by
+.IR o/x ,
+and two new commands are available:
+.TF P/regexp/cmd
+.TP
+.BI P/ regexp / " cmd
+For each panel whose name matches
+.I regexp
+execute
+.IR cmd .
+Here, only
+.BR f ,
+.BR D ,
+and
+.B e
+are valid commands.
+The default is
+.LR f .
+The former prints the
+name of the panel,
+.B D
+closes the panel, and
+.B e
+replicates the panel to the screen used to
+execute the command (or to the path given
+as an argument as shown in examples).
+.TP
+.BI Q/ regexp / " cmd
+Similar to
+.BR P ,
+but executes
+.I cmd
+for panels not matching
+.IR regexp .
+.PD
+.PP
+Commands executed as if they were
+executed using a
+.L !
+escape.
+.PP
+.I O/x
+posts events using
+.IR ports (4)
+to notify about commands executed (starting with
+.LR exec: ,
+the command text,
+.LR # ,
+and the directory for the command) and files open
+(starting with
+.L look:
+and the file path). Only the first line of the command
+is posted when it contains multiple lines.
+.SH EXAMPLES
+Save the session for
+.I O/x
+to use it later:
+.EX
+	% cd /mnt/ui/appl
+	% tar c col:ox.* >/tmp/oxui.tar
+.EE
+.PP
+Start
+.I o/x
+to continue a saved session:
+.EX
+	% cd /mnt/ui/appl
+	% tar x </tmp/oxui.tar
+	% ox -l /mnt/ui/appl/col:ox.*
+.EE
+.PP
+To get a new
+.I o/x
+directory panel in the a new screen,
+named
+.B s1
+you may execute:
+.EX
+	Dup s1
+.EE
+in any directory panel shown by
+.IR o/x .
+.PP
+To copy all the panels from the
+.B stats
+row in the
+.B main
+screen to the
+.B stats
+section of the
+.B other
+screen, execute this command
+in
+.IR o/x :
+.EX
+	P/main.*stats/ e /other/row:stats
+.EE
+.SH SOURCE
+.B /usr/octopus/port/x
+.SH SEE ALSO
+.IR olive (1),
+.IR sam (1),
+and
+.IR omero (4).
+.SH BUGS
+The editor language por panels still needs more work.
+
+

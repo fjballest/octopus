@@ -1,0 +1,179 @@
+ABOUT THE OCTOPUS
+----------------------
+See http://lsub.org/ls/octopus.html for further information.
+
+NOTE: If you use just the octopus binaries as distributed,
+the version of the standard Inferno modules must match the one
+we used (the one from google code as of 20080416).
+Otherwise, you'll get typecheck errors when trying to load
+some Inferno modules. If you are using the Inferno bundled
+in the Octopus distribution there is no need to worry about it.
+
+INSTALLATION INSTRUCTIONS FOR THE PC
+---------------------------------
+
+Download the .tgz file containing this INSTALL file to
+the directory where you want to install a new  Inferno with
+the octopus. Unpack it, and execute the install script for your
+system:
+
+1. create a directory where to install all this, and change to it.
+
+	mkdir /n/src/octopus
+	cd /n/src/octopus
+
+2. retrieve the distribution if you do not have it yet; unpack it.
+
+	hget http://lsub.org/export/o.zip >.zip
+	unzip  o.zip
+
+3. execute the install script for your system.
+
+That, is run EITHER
+	; rc ./usr/octopus/lib/Install.Plan9.rc
+OR
+	$ sh ./usr/octopus/lib/Install.Unix.sh
+depending on the system you are using
+
+4. you are done.
+
+you may restart your Inferno and execute
+	o/pcrc
+from a shell to bring up your octopus PC.
+The last section in this file mentions some scripts
+you may use to let the PC start automatically, without
+requiring your intervention.
+
+INSTALLATION INSTRUCTIONS FOR A TERMINAL
+-------------------------------------
+
+The easiest way is to copy the Inferno you have
+installed for the PC, perhaps to a memory stick, and
+use it at the terminal machine to run o/termrc
+To install a fresh terminal:
+
+1. create a directory where to install all this, and change to it.
+
+	mkdir /n/src/octopus
+	cd /n/src/octopus
+
+2. retrieve the distribution if you do not have it yet; unpack it.
+
+	hget http://lsub.org/export/o.zip >.zip
+	unzip  o.zip
+
+3. execute the terminal install script for your system.
+
+That, is run EITHER
+	./usr/octopus/lib/Installterm.Plan9.rc
+OR
+	./usr/octopus/lib/Installterm.Unix.sh
+
+4. you are done.
+
+you may restart your Inferno and execute
+	o/termrc
+on a shell window to start your octopus terminal.
+
+The last section in this file mentions some scripts
+you may use to let the PC start automatically, without
+requiring your intervention.
+
+INSTALLATION DETAILS FOR THE PC
+----------------------------
+
+Should the scripts fail for you, or should you use a different
+system as your native OS, you might have to do by hand what the
+installation script does. It's not hard:
+
+1. create your home directory
+	mv usr/inferno  usr/YOURLOGIN 
+
+2. configure the /lib/ndb/local
+Editing the words written in UPPERCASE to match your
+local configuration would suffice. 
+
+3. setup nvram
+Write your secret to keydb/nvr (plaintext, sorry) so that
+the PC may start unattended. Or don't do it if you don't want
+risks, but you'll have to provide this secret each time the PC boots.
+
+	echo -n secret > keydb/nvr
+	chmod 600 keydb/nvr
+	cp /dev/null keydb/keys
+
+
+4. Start inferno 
+
+	Plan9/386/bin/emu -r /n/src/octopus
+(or MacOSX/386/bin/emu, or whatever, depending on the system
+you are using. Also, replace /n/src/octopus with the root directory
+for the installation).
+
+All remaining steps must be done using the Inferno shell.
+
+5. Configure authentication and create your account
+
+This creates a signer key for the machine
+	auth/createsignerkey YOURSYSNAME.YOUR.DOMAIN.NAME
+Now start authentication services...
+	ndb/cs
+	svc/auth -n /keydb/nvr	# or just svc/auth if you don't have nvr
+...and create an account for you
+	auth/changelogin YOURUSERNAME
+
+6. Obtain a ticket for your server account
+
+This gives the processes in the  PC your ticket, so they can auth without
+requiring you to do this, so remember to save the ticket to a file.
+
+	getauthinfo default
+
+7. You are done.
+
+You may now kill the Inferno and start it again for normal operation.
+To start the  Octopus PC you must run
+	o/pc
+from a shell.
+To start the terminal you must run
+	o/termrc
+instead. Note that the pc start script runs the termrc start
+script as well, to let you use the pc as a terminal.
+
+
+But you might what to customize your $home/lib/wmsetup let
+the system start automatically.
+
+COMPILING FROM SOURCE
+--------------------
+
+Within Inferno:
+	cd /usr/octopus
+	OCTOPUS=/usr/octopus
+	cd port
+	mk install
+	...
+	mk clean
+
+(At a terminal, /usr/octopus would be /pc/user/octopus instead).
+
+EXAMPLE SCRIPTS AND PROGRAMS
+---------------------------
+
+Read the scripts before using them.  You may want to customize
+some variables to your needs (eg., the install directory).
+
+You may copy usr/octopus/lib/wmsetup to $home/lib/wmsetup
+to let Inferno start the PC or the termiinal when you login, without
+requiring your intervention. Edit the variable PC to be the address
+of your PC.
+
+A script for Plan 9 to start Inferno from the shell may be found at
+usr/octopus/lib/octopus.rc
+
+A script for  UNIX to start Inferno from the shell may be found at
+usr/octopus/lib/octopus.sh
+
+Finally, 9octopus.tgz contains several   Plan 9 programs for
+use with the Octopus.
+

@@ -1,0 +1,24 @@
+This includes o/ports o/mero o/x and o/live as used in the Octopus.
+These programs can be used on Inferno as distributed.
+
+See man/1/olive and man/4/omero for details and examples.
+A copy of the manual is at http://lsub.org/sys/oman
+
+You may install the octopus (or just its binaries) and then use
+just Omero and Olive if you want to. See INSTALL.Octopus
+
+
+Quick example (from the olive(1) man page):
+
+# create mount points if they do not exist
+% mkdir -p /mnt/ui /mnt/ports
+# start the event delivery service
+% o/ports
+# start the window system
+% o/mero
+# create a screen/session
+% mkdir /mnt/ui/main
+# start the shell and browser
+% o/x
+# open a viewer
+% o/live

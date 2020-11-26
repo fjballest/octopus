@@ -1,0 +1,59 @@
+.TH TBL 2
+.SH NAME
+tbl \- octopus generic integer table module
+.SH SYNOPSIS
+.EX
+include "tbl.m";
+tbl := load Tbl Tbl->PATH;
+
+Table: adt[T] {
+	items:	array of list of (int, T);
+	nilval:	T;
+
+	new: fn(nslots: int, nilval: T): ref Table[T];
+	add:	fn(t: self ref Table, id: int, x: T): int;
+	del:	fn(t: self ref Table, id: int): T;
+	find:	fn(t: self ref Table, id: int): T;
+};
+.EE
+.SH DESCRIPTION
+.I Tbl
+is a generic hash table, indexed by integer values. It is taken (stolen) from the implementation of
+.IR styxpersist (2).
+.PP
+.I New
+creates a new table with
+.I nslots
+buckets in the hash. The
+.B nilval
+argument should be a null value of the appropriate type.
+.PP
+.I Add
+adds an element to the table using
+.I id
+as the key. If an element with the same key exists it returns
+.B -1
+and refuses to add the given element.
+.PP
+.I Del
+removes an element with the given
+.I id
+from the dable, and returns it.
+.PP
+.I Find
+looks up the element with the given
+.I id
+and returns it.
+.SH EXAMPLE
+Create a has table of references to
+.B File
+with 103 buckets, and add a file with key
+.B 0
+to it.
+.EX
+	nullfile: ref File;
+	files = Table[ref File].new(103, nullfile); # use a prime number as size.
+	files.add(0, ref File("/a/file", nil));
+.EE
+.SH SOURCE
+.B /usr/octopus/port/lib/tbl.b

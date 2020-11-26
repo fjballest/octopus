@@ -1,0 +1,105 @@
+.TH NETGET 1
+.SH NAME
+netget \- octopus network resource register tool
+.SH SYNOPSIS
+.B netget
+[
+.B \-d
+]
+[
+.B \-r
+.I regdir
+]
+.I name
+.I spec
+.B "..."
+.SH DESCRIPTION
+.I Netget
+registers the resource named
+.I name
+with attributes as specified in
+.I spec
+into the registry. The registry is found by
+trying
+.BR /mnt/registry ,
+or the directory
+.I regdir
+given to the
+.B -r
+flag. If the registry is not found and
+.B -r
+was not used,
+the module dials
+.BR tcp!pc!registry
+to mount the registry listening there.
+.PP
+The program updates the registry entry once in a while, updating atrributes that
+reflect the location and the radius (round trip time in milliseconds) to the PC.
+More than one resource may be given in the command line (two arguments each, as
+said), to create multiple entries in the registry.
+.PP
+Entries registered by
+.I netget
+are subject to leasing because the program adds a
+.B lease
+attribute to them, and refresh it along with location and radius to the PC to renew
+the lease. The lease interval is set to twice the refresh rate (one minute in the current
+implementation).
+.PP
+A resource is specified by a pair of
+.I name
+and
+.I spec
+(both strings). Where
+.I name
+is the name for a network gadget, for example,
+.BR audio .
+.I Netget
+defines the attribute
+.B name
+wich such name. The name used in the registry for the resource would be
+.B o!
+followed by
+.I name
+followed by the system name, like in
+.BR o!audio!$sysname .
+The convention is that the name includes the system name for the machine providing
+the resource after the resource name, as shown.
+.PP
+The
+.I spec
+argument is a set of attribute/value pairs, in a single argument string, separated by
+white space. At least one attribute named
+.B path
+is expected in the octopus, whose value must be the path for the resource in the
+terminal providing the resource (see the example below).
+.I Netreg
+adds
+.B /terms/$sysname
+before the
+.B path
+attribute suppied, to make it portable across terminals and to ensure that
+all such attributes are homogeneous.
+.PP
+The program adds attributes
+.B sys
+(with the sysname name),
+.B user
+(with the user name for the user running the program),
+.B loc
+(with the location as for the machine as said in
+.B /pc/what/$sysname/where
+),
+.B rad
+(with the radius for the service, ie., milliseconds of RTT to the central PC), and
+.B arch
+(with a string reflecting the host architecture and system name).
+.SH EXAMPLE
+.PP
+Register the directory
+.B /what
+from the terminal in the central PC:
+.IP
+.B "o/netget what 'path /what' 
+.SH SOURCE
+.B /usr/octopus/port/lib/netget.b

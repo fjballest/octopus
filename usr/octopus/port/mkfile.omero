@@ -1,0 +1,40 @@
+# top-level mkfile
+
+DIRS=\
+	lib\
+	mero\
+	live\
+	x\
+
+TARG=\
+	ports.dis\
+
+
+SYSMODULES=\
+	error.m\
+	io.m\
+	os.m\
+	tbl.m\
+	blks.m\
+	tblks.m\
+
+MODULES=\
+
+DISBIN=/dis/o
+
+<mkdis
+
+all:V:	all-subdir
+install:V: install-subdir
+release:V: install
+	date -n >$DISBIN/version
+uninstall:V: uninstall-subdir
+nuke:V: nuke-subdir
+clean:V: clean-subdir
+
+%-subdir:QV:
+	mkdir -p /dis/o /dis/o/mero /dis/o/live /dis/o/ofs /dis/o/x
+	d=`{pwd}
+	for j in $DIRS { cd $d/$j; pwd ; mk $MKFLAGS $stem }
+ 	cd $d
+

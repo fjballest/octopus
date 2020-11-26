@@ -1,0 +1,83 @@
+.TH PORTS 4
+.SH NAME
+ports \- event ports file system
+.SH SYNOPSIS
+.B o/ports
+[
+.B \-abcdi
+]
+[
+.B \-q
+.I n
+]
+[
+.B -m
+.I mnt
+]
+.SH DESCRIPTION
+.I Ports
+provides text event delivery through its file interface. It serves
+a directory with a
+.B post
+file that can be used to post events.
+By default it mounts itself at
+.B /mnt/ui
+unless flag
+.B -m
+is used to request mounting at
+.I mnt
+or flag
+.B -i
+is used to request reaching the client through
+standard input. Flags
+.B -abc
+are similar to those of
+.IR mount (1).
+.PP
+Each
+.IR write (2)
+on the
+.B post
+file is considered an event. Events are supposed to be small enough to fit in a single write, and
+they are handled as strings by
+.IR ports .
+All events should terminate with a new-line character. Multiple events can be written together.
+.PP
+To listen for events, additional files may be created in the directory served. Each file created
+represents a listener for events. Once created, a regular expression in the format supported by
+.IR regex (2)
+must be written to the file, to program it to listen for matching events. Events written to
+.B post
+but not matching this regular expression will be ignored (for this file). The regular expression can
+be changed by further writes, but it will not affect events already queued for delivery.
+.PP
+Each read request for a listener file will return a single event by default. This can be changed by
+writing
+.L multi
+to the file. In this case, all queued events that fit in the read buffer will be delivered for a single request
+(without splitting events between multiple reads).
+.PP
+Events are queued up to a
+maximum of 128 events (or
+.I n
+if
+.B -q
+is given in the command line). Should the queue become full (due to a slow event reader client),
+old events will be discarded.
+.PP
+Note that listener files do not need to be open during the entire process. That is, an application
+may create a listener file, close it, reopen it, write a regular expression, close it, reopen it,
+and loop reading events. This is done so to simplify the use of ports from shell scripts and to
+admit protocols like Op.
+.PP
+When a program does not read events for more than one minute, and the queue for the listener
+file is full, it is considered an error and the listener file is removed.
+.PP
+If a file with name
+.B unsent
+is created, events not posted to any other file will be delivered to it. This file can be used to detect
+events not received by anyone else.
+.SH SOURCE
+.B /usr/octopus/port/ports.b
+.SH SEE ALSO
+.IR plumber (8)

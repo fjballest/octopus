@@ -1,0 +1,91 @@
+.TH PCRC 1
+.SH NAME
+pcrc, termrc, pcns, termns \- octopus start-up scripts
+.SH SYNOPSIS
+.B pcrc
+.br
+.B termrc
+.br
+.B pcns
+.br
+.B termns
+.SH DESCRIPTION
+.I Pcrc
+starts the central computer services for the octopus. It converts a
+local inferno in the PC for the octopus. The PC may
+.B not
+be used as a terminal. It provides a central name space and the
+means to run applications on the PC via
+.IR ox (1)
+but does not even start a graphics terminal.
+.PP
+.I Termrc
+plugs in the local inferno as a terminal for the PC. It converts the
+local inferno into an octopus terminal. When the PC is to be used also
+as a terminal, it is customary to start a second inferno on the PC (with
+plenty of memory in the pool for graphics) to run
+.I termrc .
+.PP
+Both scripts are meant to be customized for particular users, although
+they might perhaps fit as provided.
+.PP
+The script
+.I pcrc
+starts DNS, the connection service, and authentication services. It defines the
+.B $PC
+environment variable, and spawns listeners for services expected at the PC in
+the octopus. In particular, it provides a registry and also import and export
+ports via Op to import terminal devices and to export the central name space to
+terminals. It is responsible for starting the window system and
+.IR ox (1)
+among other things.
+.PP
+The script
+.I termrc
+asks for the location of the terminal and for the name of the central PC. It defines
+environment variables
+.B $location
+and
+.B $pc
+reflecting that. Then, it updates context information for the terminal
+(kept at
+.B /term/what )
+and dials the PC both to export local devices to the PC and to
+import the central name space from the PC (using Op in both cases). It
+starts
+.IR olive (1)
+to let the user browse the  PC and execute commands on it. It also
+starts a shell with a mounted
+.B /pc ,
+which now contains the shared name space from the central PC.
+.PP
+Both scripts rely on
+.I pcns
+to start the central name space for the PC and also on
+.I termns
+to start a namespace for the terminal. Both scripts may be customized
+by local installations to change the name spaces used by default for the PC
+and terminals.
+.PP
+.SH EXAMPLE
+.PP
+This is an example session:
+.EX
+% o/termrc
+location? [home] 
+PC? [alboran.lsub.org] 
+welcome to your octopus terminal at home
+PC is alboran.lsub.org 212.128.4.124
+importing /pc
+terminal with radius 0562
+exporting /what /who /fs
+%
+.EE
+.SH SOURCE
+.BR /usr/octopus/port/pcrc ,
+.BR /usr/octopus/port/termrc ,
+.BR /usr/octopus/port/pcns ,
+and
+.BR /usr/octopus/port/termns .
+
+

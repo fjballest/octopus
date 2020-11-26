@@ -1,0 +1,23 @@
+Times taken during a "Open guide" using the menu.
+The update process takes a long time
+(3 seconds on a single machine)
+
+look	1204559204	request at olive
+post	1204559204	request at omero
+hold 	1204559204	start processing at o/x
+rlse 	1204559205	end processing at o/x
+layout 	1204559207	completion at olive
+
+Times taken during initialization, with some
+panels created in o/mero:
+
+init 	1204560131	initial time
+updaate 	1204560152	after update
+layout 	1204560152	after layout
+
+reading the tree with puttar takes 13.1 seconds,
+mounting from another inferno.
+
+reading the tree with puttar on the same inferno takes
+2 seconds.
+

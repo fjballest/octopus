@@ -1,0 +1,20 @@
+.TH OH 1
+.SH NAME
+oh \- o/x history
+.SH SYNOPSIS
+.B o/oh
+[
+.B -n
+.I num
+]
+.SH DESCRIPTION
+.I Oh
+keeps a list of buttons corresponding to the
+.I num
+(default 4) recently used commands.
+.SH SOURCE
+.B /usr/octopus/port/oh.b
+.SH SEE ALSO
+.IR ox (1)
+and
+.IR omero (4).

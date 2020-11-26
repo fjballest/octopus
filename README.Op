@@ -1,0 +1,9 @@
+This includes oxport and ofs as used in the Octopus.
+These programs can be used on Inferno as distributed.
+
+See man/4/oxport and man/4/ofs for details and examples.
+A copy of the manual is at http://lsub.org/sys/oman
+
+You may install the octopus (or just its binaries) and then use just Op,
+if you want to. See INSTALL.Octopus
+

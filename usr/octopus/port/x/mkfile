@@ -1,0 +1,35 @@
+TARG=\
+	regx.dis\
+	sam.dis\
+	samcmd.dis\
+	samlog.dis\
+	x.dis\
+	xdat.dis\
+	xedit.dis\
+	xex.dis\
+	load.dis\
+
+MAIN=x
+
+MODULES=\
+	mods.m\
+	regx.m\
+	sam.m\
+	samcmd.m\
+	samlog.m\
+	xdat.m\
+	xedit.m\
+	xex.m\
+	load.m\
+
+SYSMODULES=\
+	../../module/error.m\
+	../../module/panel.m\
+	../../module/os.m\
+	../../module/io.m\
+	../../module/tblks.m\
+
+DISBIN=/dis/o/x
+
+<../mkdis
+<../mkdismain

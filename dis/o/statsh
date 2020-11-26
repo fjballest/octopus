@@ -1,0 +1,36 @@
+#!/dis/sh.dis -n
+
+# All these binds are to prevent acme from
+# using the current name space (provided by iostats)
+# to access stuff that is indeed local.
+# That way, iostats statsh would report stats about
+# term <-> pc communication
+
+bind -c '#U' /n/local
+bind -c '#U/acme' /acme
+bind -c '#U/dis' /dis
+bind -c '#U/appl' /appl
+bind -c '#U/doc' /doc
+bind -c '#U/fonts' /fonts
+bind -c '#U/include' /include
+bind -c '#U/icons' /icons
+bind -c '#U/lib' /lib
+bind -c '#U/limbo' /limbo
+bind -c '#U/man' /man
+bind -c '#U/module' /module
+bind -c '#U/usr' /usr
+bind -c '#U/tmp' /tmp
+bind -b '#s' /chan
+bind -b '#^' /chan
+bind -c '#e' /env
+bind '#d' /fd
+bind -b '#^' /dev
+bind -b '#m' /dev
+bind -b '#c' /dev
+bind -b '#i' /dev
+bind '#p' /prog
+bind -b '#sdns' /net
+bind -b '#scs' /net
+
+acme -f $font /pc
+

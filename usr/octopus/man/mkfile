@@ -1,0 +1,26 @@
+all:V: indices
+
+indices:V:
+	for (i in 1 2 4 O){
+		mkhtmlindex $i > $i/INDEX.html
+	}
+
+
+clean:V:
+	rm -f */INDEX.html 
+
+man.pdf:V:
+	@{
+	troff -ms -mpictures title
+	for (i in 1 2 4 O){
+		cd $i
+		for (m in `{ls | grep -v html}){
+			troff -mano $m
+		}
+		cd ..
+	}
+	} > man.out
+	cat man.out| lpfonts >man.fonts
+	ps2pdf man.fonts > man.pdf
+	rm man.out man.fonts
+

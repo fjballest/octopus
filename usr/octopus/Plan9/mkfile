@@ -1,0 +1,16 @@
+TARG=\
+	mvoice.dis\
+	print.dis\
+	idle.dis\
+
+MODULES=\
+
+SYSMODULES=\
+	error.m\
+	mvoice.m\
+	spooler.m\
+	os.m\
+
+DISBIN=/dis/o/Plan9
+
+<../port/mkdis

@@ -1,0 +1,109 @@
+.TH SPOOL 4
+.SH NAME
+spool, view, print \- file spooler viewer and printer
+.SH SYNOPSIS
+.B o/spool
+[
+.B \-abcdr
+]
+[
+.B -m
+.I mnt
+]
+.I module
+[
+.I moduleargs
+]
+.B ...
+.PP
+.B view
+.PP
+.B print
+[
+.I printername
+]
+.SH DESCRIPTION
+.I Spool
+serves
+a flat directory that can be used to operate on files by copying them into it.
+What is done to files copied into this directory depends on the
+.I module
+given as an argument. For example, using
+.I view
+as a module provides a file viewer and using
+.I print
+provides a printer spooler. Any module implementing
+.IR spooler (2)
+can be used.
+Spooled files are copied into local storage and kept in the directory served. They are handed
+to
+.I module
+for processing. Removing them stops processing them, if the
+.I module
+supports that.
+.PP
+A file
+.B ctl
+is provided to retrieve status for the spooler. For example, when using
+.I print
+it reports the printer status.
+.PP
+.I View
+uses
+.IR cmd (3)
+to run a viewer in the host to view the file. For example, the file is plumbed on
+Plan 9 systems and given to
+.CW open
+on MacOSX systems.
+Different file formats can be viewed by copying
+them into the directory served.
+Usually, PDF, PostScript, GIF, JPEG, and other various formats are understood,
+but this depends on the host system used.
+.PP
+If the file name terminates in
+.B .url
+.I view
+reads its contents, a URL, and displays the URL in a web browser.
+.PP
+.I Print
+spools files to an underling printer spooler. The printer name, given as
+an argument, is
+.B default
+by default. Removing the file attempts to cancel the print job.
+.PP
+By default,
+.I spool
+speaks Styx using the standard input, for use with
+.IR mount (1).
+Flag
+.B -m
+can be used to ask
+.I spool
+to mount itself at
+.IR mnt .
+Options
+.B -abc
+determine the mount flag, as in
+.IR bind (1).
+Flag
+.B -d
+is used to debug the program, and makes it very verbose.
+.PP
+If flag
+.B -r
+is given, any attempt to read a file copied into the spool would launch again
+the module used to spool the file. This is appropriate, for example, when viewing files.
+.SH SOURCE
+.B /usr/octopus/port/spool.b
+.br
+.B /usr/octopus/port/lib/view.b
+.br
+.B /usr/octopus/MacOSX/print.b
+.br
+.B /usr/octopus/Plan9/print.b
+.SH SEE ALSO
+.IR spooler (2)
+.SH BUGS
+May not work on some platforms. Also, the files are kept hanging around for
+too long, because we do not know when the module (e.g., the host file viewer) would cease using
+them.

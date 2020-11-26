@@ -1,0 +1,21 @@
+.TH IDLE 1
+.SH NAME
+idle \- detect when the user is not idle
+.SH SYNOPSIS
+.B o/idle
+.SH DESCRIPTION
+.I Idle
+updates
+.BI /mnt/who/ user /last
+with
+.B $sysname
+whenever it thinks the user started to use the machine by
+looking at mouse/keyboard activity and to the status of the
+screen saver.
+.SH SOURCE
+.B /usr/octopus/MacOSX/idle.b
+.br
+.B /usr/octopus/Plan9/idle.b
+.SH BUGS
+The Plan 9 version only works for Plan B kernels.
+

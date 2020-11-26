@@ -1,0 +1,114 @@
+.TH OXPORT 4
+.SH NAME
+oxport \- export name space on a connection using Op
+.SH SYNOPSIS
+.B o/oxport
+[
+.B \-Ad
+]
+[
+.B \-L
+.I ms
+]
+[
+.B \-x
+.I addr
+]
+.I dir
+.SH DESCRIPTION
+.I Oxport
+serves
+a name space rooted at
+.I dir
+over a connection to an Op client. The connection is indeed
+standard input, because the program is implemented to be used with
+.IR listen (1).
+Using
+.I oxport
+is more efficient in terms of latency than
+using
+.IR export (4)
+for RTTs of 1ms or more.
+.PP
+The program does not
+fork the current name space, any change to the current name space will
+be visible to clients. This is appropriate for exporting the PC name space to terminals,
+while still seeing any change made to the exported namespace (eg., new terminal
+arrivals) but it means that care has to be taken to avoid deadlocks (caused whenever the
+exported namespace is mounted in the namespace used by the program).
+.PP
+The connection is assumed to be trusted and authenticated, on the name of
+the first user attaching to the exported file tree.
+.PP
+Flag
+.B -x
+can be used to make
+.I oxport
+dial
+.I addr
+and serve
+.I dir
+over the connection, after reporting the local system name to the other end. See
+.IR ofs (4)
+for the details. This is used in the octopus to export portions of terminals to the central PC.
+In this case, the program authenticates and encrypts the connection, unless
+.B -A
+is given as an option.
+.PP
+Note that in the usual case of running
+.I oxport
+from
+.I listen
+it will not authenticate or encrypt the channel. That is assumed to be done by
+.I listen
+and not by this program.
+.PP
+Flag
+.B -L
+is used to debug the protocol by pretending that the RTT for a RPC is at least
+.I ms
+milliseconds for a message. The implementation is a call to
+.IR sleep (2)
+before attending each client request. Client requests are
+served concurrently, thus this should not affect throughput.
+.PP
+See
+.IR intro (O)
+for a description of the protocol spoken. This is important if this program is being
+used to export devices.
+.SH EXAMPLE
+Export (using Op) the entire file tree seen in the current name space
+to clients connecting to
+.B tcp!127.0.0.1!4242
+(without authentication nor encryption of the communication channel, but with
+debugging messages enabled):
+.IP
+.B "listen -At tcp!127.0.0.1!4242 oxport -d / >[2]/dev/cons"
+.PP
+Export our home directory to clients that authenticate, encrypting the communication
+channel:
+.IP
+.B "listen -a rc4 -t tcp!127.0.0.1!10000 {o/oxport /usr/nemo}"
+.PP
+Export the directory
+.B /term
+to the Op client listening at the given address:
+.IP
+.B "o/oxport -x tcp!alboran!16699 /term"
+.SH SOURCE
+.B /usr/octopus/port/oxport.b
+.SH SEE ALSO
+.IR intro (O)
+and
+.IR ofs (4).
+.SH BUGS
+Currently,
+.I oxport
+denies access for subtrees of the directory exported
+other than
+.B /
+(that is, it prevents the use of the field
+.B path
+in
+.IR attach (O)
+requests).

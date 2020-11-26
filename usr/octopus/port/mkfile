@@ -1,0 +1,82 @@
+# top-level mkfile
+
+DIRS=\
+	lib\
+	live\
+	mero\
+	mux\
+	ofs\
+	x\
+	../MacOSX\
+	../Plan9\
+	../Linux\
+
+TARG=\
+	clock.dis\
+	lmount.dis\
+	oxport.dis\
+	pcrc\
+	pcns\
+	plumbing.dis\
+	ports.dis\
+	snarf.dis\
+	spool.dis\
+	termrc\
+	termns\
+	voice.dis\
+	watcher.dis\
+	camera.dis\
+	open.dis\
+	browserfs.dis\
+	w\
+
+SYSMODULES=\
+	error.m\
+	mvoice.m\
+	netget.m\
+	netutil.m\
+	op.m\
+	opmux.m\
+	os.m\
+	io.m\
+	query.m\
+	spooler.m\
+	tbl.m\
+	panel.m\
+	mcamera.m\
+	browsercmd.m\
+
+
+MODULES=\
+
+DISBIN=/dis/o
+
+all:V:	all-subdir
+install:V: install-subdir
+
+<mkdis
+
+release:V: install
+	date -n >$DISBIN/version
+uninstall:V: uninstall-subdir
+nuke:V: nuke-subdir
+clean:V: clean-subdir
+
+%-subdir:QV:
+	mkdir -p /dis/o /dis/o/mero /dis/o/live /dis/o/ofs /dis/o/x /dis/o/nope
+	d=`{pwd}
+	for j in $DIRS { cd $d/$j; pwd ; mk $MKFLAGS $stem }
+ 	cd $d
+
+$DISBIN/termrc: termrc
+	cp termrc $DISBIN
+$DISBIN/pcrc: pcrc
+	cp pcrc $DISBIN
+$DISBIN/newterm: newterm
+	cp newterm $DISBIN
+$DISBIN/pcns: pcns
+	cp pcns $DISBIN
+$DISBIN/termns: termns
+	cp termns $DISBIN
+$DISBIN/w: w
+	cp w $DISBIN

@@ -1,0 +1,119 @@
+#!/bin/rc
+#
+# Octopus installation script for  Plan 9.
+# 
+rfork ne
+fn fail {
+	echo error: $*
+	exit failed
+}
+
+fn ask {
+	if(~ $#2 0)
+		echo -n $1^'? ' >[1=2]
+	if not
+		echo -n $1^'? ['^$2^'] ' >[1=2]
+	r=`{read}
+	if(~ $r '' '\n' ' ' && ! ~ $#2 0 )
+		r=$2
+	echo  $r
+}
+
+fn readsecret {
+	x1=a
+	x2=b
+	while(! ~ $"x1 $"x2 ) {
+		echo -n $1 'your new PC password? '
+		{echo -n rawon ; x1=`{read}} >/dev/consctl
+		echo
+		echo -n $1 'confirm your new PC password? '
+		{echo -n rawon ; x2=`{read}} >/dev/consctl
+		echo
+	}
+	echo -n $"x1 >keydb/nvr
+	chmod 600 keydb/nvr
+}
+
+me=`{cleanname -d `{pwd} $0}
+dir=`{echo $me | sed 's,/usr/octopus/lib/Install.Plan9.rc,,'}
+echo Install directory is $dir
+cd $dir
+chmod +x ./*/386/bin/* 
+chmod +x ./usr/octopus/lib/*.sh ./usr/octopus/lib/*.rc ./usr/octopus/lib/wmsetup
+chmod  +x dis/*/*/* dis/*/* dis/*
+
+if(! test -d usr/$user){
+	echo creating your inferno home
+	mv usr/inferno usr/$user || fail cannot create home
+}
+
+
+if(! grep -s $sysname lib/ndb/local){
+	echo configuring ndb
+	ok=no
+	while(~ $ok no){
+		mdom=`{ndb/query sys $sysname dom | sed 's/[^.]*\.//'}
+		dom=`{ask 'your domain name' $"mdom}
+		mdns=`{grep dns /lib/ndb/local | sed 1q | sed 's/[^0-9]*([0-9.]+)[^0-9]*/\1/' }
+		dns=`{ask 'your dns server' $"mdns}
+		mip=`{sed 1q /net/ipifc/0/local | sed 's/ .*//'}
+		ip=`{ask 'your ip' $mip}
+		echo 'dom=' $dom
+		echo 'dns=' $dns
+		echo 'ip=' $ip
+		ok=`{ask 'is this ok' yes}
+	}
+}
+if(! grep -s $sysname lib/ndb/local)
+cat >lib/ndb/local <<!
+database=
+	file=/lib/ndb/local
+	file=/lib/ndb/dns
+	file=/lib/ndb/inferno
+	file=/lib/ndb/common
+	file=/lib/ndb/octopus
+
+#
+# default site-wide resources
+#
+infernosite=
+	dnsdomain=$dom
+	dns=$dns
+	SIGNER=pc
+	FILESERVER=pc
+	smtp=pc
+	pop3=pc
+	PROXY=pc
+	GAMES=pc
+	registry=pc
+	gridsched=pc
+
+sys=pc dom=$sysname.$dom ip=$ip
+sys=$sysname dom=$sysname.$dom ip=$ip
+!
+
+if(! test -e keydb/nvr) @{
+	echo configuring your account. If you interrupt this,
+	echo remove all files in $dir/keydb and re-run this script
+	readsecret
+	cp /dev/null keydb/keys
+	chmod 600 keydb/keys
+	Plan9/386/bin/emu -r $dir /usr/octopus/lib/setup.sh
+}
+echo all done
+echo This might be an appropriate $home/bin/rc/octopus script:
+cat<<X
+------------------------------
+#!/bin/rc
+bind -b $dir/Plan9/386/bin /bin
+bind -ac $home $dir/$home
+$dir/Plan9/386/bin/emu -r $dir /dis/wm/wm.dis wm/logon -u $user
+------------------------------
+X
+echo
+echo 'After starting Inferno, you have to run'
+echo '	' o/pcrc
+echo on a shell window to start the octopus PC.
+echo You might also edit your lib/wmsetup file to do just this.
+echo
+exit ''

@@ -1,0 +1,361 @@
+limbo .sbl 2.1
+Pimpl
+16
+ompimage.b
+sys.m
+styx.m
+styxservers.m
+daytime.m
+merocon.m
+dat.m
+string.m
+names.m
+error.m
+tbl.m
+lists.m
+mpanel.m
+merop.m
+blks.m
+merotree.m
+27
+34.1,8 0
+35.7,10 1
+1,15 1
+36.7,10 2
+1,15 2
+37.7,10 3
+1,15 3
+38.9,12 4
+1,19 4
+39.34,34 5
+27,34 5
+8,35 5
+8,35 5
+8,35 6
+1,35 5
+44.0,1 7
+48.17,28 8
+1,37 8
+49.1,21 9
+50.1,17 10
+51.0,1 11
+57.8,11 12
+1,11 12
+62.9,10 13
+12,22 13
+24,27 13
+1,28 13
+11
+aSys->Dir 1:26.1,39.2 64
+11
+0:name:28.2,6 s
+4:uid:29.2,5 s
+8:gid:30.2,5 s
+12:muid:31.2,6 s
+16:qid:32.2,5 @1
+
+32:mode:33.2,6 i
+36:atime:34.2,7 i
+40:mtime:35.2,7 i
+48:length:36.2,8 B
+56:dtype:37.2,7 i
+60:dev:38.2,5 i
+aSys->Qid 11.1,16.2 16
+3
+0:path:13.2,6 B
+8:vers:14.2,6 i
+12:qtype:15.2,7 i
+aStyxservers->Styxserver 3:44.1,82.2 32
+7
+0:fd:45.2,4 R@3
+
+4:fids:46.2,6 ALR@4
+
+8:fidlock:47.2,9 Ci
+12:t:48.2,3 R@5
+
+16:rootpath:49.2,10 B
+24:msize:50.2,7 i
+28:replychan:51.2,11 CR@7
+
+aSys->FD 1:45.1,48.2 4
+1
+0:fd:47.2,4 i
+aStyxservers->Fid 3:5.1,19.2 48
+9
+0:fid:6.2,5 i
+8:path:7.2,6 B
+16:qtype:8.2,7 i
+20:isopen:9.2,8 i
+24:mode:10.2,6 i
+28:doffset:11.2,9 t8.2
+0:t0:12,15 i
+4:t1:12,15 i
+
+36:uname:12.2,7 s
+40:param:13.2,7 s
+44:data:14.2,6 Ab
+aStyxservers->Navigator 21.1,29.2 8
+2
+0:c:22.2,3 CR@6
+
+4:reply:23.2,7 Ct8.2
+0:t0:18,30 R@0
+
+4:t1:18,30 s
+
+pStyxservers->Navop 31.1,42.2 0
+2
+4:reply:32.2,7 Ct8.2
+0:t0:18,30 R@0
+
+4:t1:18,30 s
+
+8:path:33.2,6 B
+3
+Stat:35.2,6 16
+0
+Walk:36.2,6 24
+1
+16:name:37.3,7 s
+Readdir:38.2,9 24
+2
+16:offset:39.3,9 i
+20:count:40.3,8 i
+pStyx->Rmsg 2:125.1,163.2 0
+1
+4:tag:126.2,5 i
+15
+Readerror:128.2,11 12
+1
+8:error:129.3,8 s
+Version:130.2,9 16
+2
+8:msize:131.3,8 i
+12:version:132.3,10 s
+Auth:133.2,6 24
+1
+8:aqid:134.3,7 @1
+
+Attach:135.2,8 24
+1
+8:qid:136.3,6 @1
+
+Flush:137.2,7 8
+0
+Error:138.2,7 12
+1
+8:ename:139.3,8 s
+Clunk:140.2,7 8
+0
+Remove:141.2,8 
+Wstat:142.2,7 
+Walk:143.2,6 12
+1
+8:qids:144.3,7 A@1
+
+Create:145.2,8 32
+2
+8:qid:147.3,6 @1
+
+24:iounit:148.3,9 i
+Open:146.2,6 
+Read:149.2,6 12
+1
+8:data:150.3,7 Ab
+Write:151.2,7 12
+1
+8:count:152.3,8 i
+Stat:153.2,6 72
+1
+8:stat:154.3,7 @0
+
+aPanels->Panel 12:26.1,59.2 52
+13
+0:id:27.2,4 i
+4:aid:28.2,5 i
+8:pid:29.2,5 i
+12:name:30.2,6 s
+16:impl:31.2,6 mPimpl
+95.0,102.1 0
+
+20:container:32.2,11 i
+24:editions:33.2,10 i
+28:editing:34.2,9 i
+32:data:35.2,6 Ab
+36:evers:36.2,7 i
+40:edits:37.2,7 s
+44:repl:38.2,6 AR@9
+
+48:nrepl:39.2,7 i
+aPanels->Repl 69.1,80.2 40
+8
+0:id:70.2,4 i
+4:pos:71.2,5 i
+8:dvers:72.2,7 i
+12:cvers:73.2,7 i
+16:tree:74.2,6 i
+20:path:75.2,6 s
+24:dirq:76.2,6 B
+32:attrs:77.2,7 A@10
+
+aPanels->Attr 61.1,64.2 8
+2
+0:v:62.2,3 s
+4:vers:63.2,6 i
+5
+0:init
+1
+32:d:0:32.5,6 mDat
+6:1.0,24.1 21
+0:appl:4.1,5 B
+8:blks:16.1,5 mBlks
+14:1.0,38.1 1
+0:debug:37.1,6 i
+
+12:daytime:6:23.1,8 mDaytime
+4:1.0,53.1 0
+
+16:debug:6:3.1,6 i
+20:err:11.1,4 mError
+9:1.0,13.1 1
+0:stderr:11.1,7 R@3
+
+
+24:lists:6:14.1,6 mLists
+11:1.0,21.1 0
+
+28:merocon:6:19.1,8 mMerocon
+5:4.0,42.1 0
+
+32:merop:6:15.1,6 mMerop
+13:2.0,38.1 1
+0:debug:37.1,6 i
+
+36:merotree:6:20.1,9 mMerotree
+15:6.0,27.1 0
+
+40:mnt:6:2.1,4 s
+44:names:17.1,6 mNames
+8:1.0,13.1 0
+
+48:panels:6:18.1,7 mPanels
+12:3.0,90.1 0
+
+56:slash:6:5.1,6 B
+64:srv:9.1,4 R@2
+
+68:str:12.1,4 mString
+7:1.0,40.1 0
+
+72:styx:6:21.1,5 mStyx
+2:1.0,182.1 0
+
+76:styxs:6:22.1,6 mStyxservers
+3:1.0,108.1 0
+
+80:sys:6:10.1,4 mSys
+1:4.0,161.1 0
+
+84:tbl:6:13.1,4 mTbl
+10:1.0,15.1 0
+
+88:user:6:6.1,5 s
+92:vgen:7.1,5 i
+
+0
+Ls15:pinit
+0
+0
+n16:rinit
+1
+36:r:0:46.22,23 R@9
+
+1
+40:nattrs:48.1,7 A@10
+
+n21:newdata
+0
+0
+s23:ctl
+0
+0
+t12.3
+0:t0:60.58,61 i
+4:t1:58,61 s
+8:t2:58,61 s
+6
+0:dat:11.1,4 mDat
+6:1.0,24.1 21
+0:appl:4.1,5 B
+8:blks:16.1,5 mBlks
+14:1.0,38.1 1
+0:debug:37.1,6 i
+
+12:daytime:6:23.1,8 mDaytime
+4:1.0,53.1 0
+
+16:debug:6:3.1,6 i
+20:err:11.1,4 mError
+9:1.0,13.1 1
+0:stderr:11.1,7 R@3
+
+
+24:lists:6:14.1,6 mLists
+11:1.0,21.1 0
+
+28:merocon:6:19.1,8 mMerocon
+5:4.0,42.1 0
+
+32:merop:6:15.1,6 mMerop
+13:2.0,38.1 1
+0:debug:37.1,6 i
+
+36:merotree:6:20.1,9 mMerotree
+15:6.0,27.1 0
+
+40:mnt:6:2.1,4 s
+44:names:17.1,6 mNames
+8:1.0,13.1 0
+
+48:panels:6:18.1,7 mPanels
+12:3.0,90.1 0
+
+56:slash:6:5.1,6 B
+64:srv:9.1,4 R@2
+
+68:str:12.1,4 mString
+7:1.0,40.1 0
+
+72:styx:6:21.1,5 mStyx
+2:1.0,182.1 0
+
+76:styxs:6:22.1,6 mStyxservers
+3:1.0,108.1 0
+
+80:sys:6:10.1,4 mSys
+1:4.0,161.1 0
+
+84:tbl:6:13.1,4 mTbl
+10:1.0,15.1 0
+
+88:user:6:6.1,5 s
+92:vgen:7.1,5 i
+
+4:err:0:20.1,4 mError
+9:1.0,13.1 1
+0:stderr:11.1,7 R@3
+
+
+12:names:0:17.1,6 mNames
+8:1.0,13.1 0
+
+28:str:0:14.1,4 mString
+7:1.0,40.1 0
+
+32:sys:0:3.1,4 mSys
+1:4.0,161.1 0
+
+36:tbl:0:23.1,4 mTbl
+10:1.0,15.1 0
+

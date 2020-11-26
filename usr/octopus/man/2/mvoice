@@ -1,0 +1,35 @@
+.TH MVOICE 2
+.SH NAME
+mvoice \- machine dependent voice support to speak text
+.SH SYNOPSIS
+.EX
+include "mvoice.m";
+mvoice := load Mvoice Mvoice->PATH;
+
+init:		fn(): string;
+speak:	fn(text: string): string;
+.EE
+.SH DESCRIPTION
+The function
+.I init
+initializes the module. Call it first.
+.PP
+.I Speak
+uses the host speech support to speak
+.I text
+out loud. It returns a null string when successful, or the error
+string otherwise.
+.PP
+This is a host-dependent module. Refer to the source section to see
+the supported platforms. The file server
+.IR voice (4)
+uses this facility and can be used as an example.
+.SH SOURCE
+.B /usr/octopus/MacOSX/mvoice.b
+.br
+.B /usr/octopus/Plan9/mvoice.b
+.SH BUGS
+Punctuation symbols are not handled properly, because of the syntax
+used by the underlying command. Has been tested only with simple
+sentences.
+

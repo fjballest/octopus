@@ -1,0 +1,68 @@
+.TH WATCHER 1
+.SH NAME
+watcher \- octopus watcher for network resource arrival and departure
+.SH SYNOPSIS
+.B watcher
+[
+.B \-dv
+]
+[
+.B -r
+.I regdir
+]
+.SH DESCRIPTION
+.I Watcher
+watches out the registry to detect and notify of arrivals and departures of terminals
+in the octopus. It opens
+.B /mnt/registry/event
+to detect changes in the registry (or uses the registry mounted at
+.I regdir
+when
+.B -r
+is given)
+and scans the registry each time it changes.
+.PP
+For each new entry in the registry with value
+.B ofs
+for the
+.B name
+attribute
+.I watcher
+plumbs a message notifying of the arrival of the terminal whose name is reported by
+the
+.B sys
+attribute as found in the entry. When such entry is gone (either due to lack of refresh or
+due to removal from the registry)
+.I watcher
+plumbs a message notifying the departure of the terminal. Messages are plumbed both
+via
+.IR plumber (8)
+and
+via
+.IR ports (4).
+.PP
+Upon departure of a terminal, as reflected by a gone registry entry for
+.BR ofs ,
+.I watcher
+kills
+the entire process group of the process whose PID was reported in the
+.B pid
+attribute of the
+.B ofs
+entry. This is done to force all resources imported from a (no longer working) gone
+terminal to be discarded. Also,
+.I watcher
+tries to unmount the terminal from
+.B /devs
+(just in case).
+.PP
+Flag
+.B -v
+makes the program a little verbose, to report arrivals and departures. Flag
+.B -d
+makes the program quite verbose, for debugging.
+.SH SOURCE
+.B /usr/octopus/port/watcher.b
+.SH SEE ALSO
+.IR netget (1),
+.IR mux (4).

@@ -1,0 +1,18 @@
+TARG=\
+	mvoice.dis\
+	print.dis\
+	idle.dis\
+
+MODULES=\
+
+SYSMODULES=\
+	sys.m\
+	env.m\
+	error.m\
+	mvoice.m\
+	spooler.m\
+	os.m\
+
+DISBIN=/dis/o/Linux
+
+<../port/mkdis

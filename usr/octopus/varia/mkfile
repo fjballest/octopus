@@ -1,0 +1,48 @@
+# rules for slides (foils):  *.mf -> pdf, pg, view
+# rules for documents (ms): *.mf -> ps pdf pg html
+# rules for pictures: pic -> gif pg
+
+writeyourown:VQ:
+	echo no default rule
+
+%.pdf:D:%.mf
+	eval `{doctype  $stem.mf} | 
+	lp -dstdout -L | ps2pdf > $stem.pdf
+%.ps:D:%.mf
+	eval `{doctype  $stem.mf} | 
+	lp -dstdout -L | aux/download -H/sys/lib/postscript/font -mfontmap  > $stem.ps
+
+%.ps:D:%.tex
+	latex $stem.tex ; dvips -o $stem.ps $stem.dvi
+
+%.pg:V:%.tex
+	latex $stem.tex ; dvips -o $stem.ps $stem.dvi ; plumb $stem.ps
+	
+all.pdf:Q: $FILES
+	{
+		for (f in  [0-9].*.mf) {
+			echo $f >[1=2]
+			eval `{doctype -mpictures -mfoils $f}
+		}
+	}| lp -dstdout -L | ps2pdf > $target
+
+%.pg:V:%.mf
+	eval `{doctype -mpictures -mfoils $stem.mf} | lp -dstdout -m0.7  | page -w
+%.view:V:%.pdf
+	plumb $stem.pdf
+
+%.pg:V:%.ms
+	eval `{doctype $stem.ms } | page -w
+%.ps:D:%.ms
+	eval `{doctype $stem.ms } | lp -dstdout  | aux/download -H/sys/lib/postscript/font -mfontmap  > $stem.ps
+%.pdf:D:%.ms
+	eval `{doctype $stem.ms } | lp -dstdout | ps2pdf  > $stem.pdf
+%.html:D:%.ms
+	cat $stem.ms | pic2html | ms2html -c 'GSyC. URJC.' > $stem.html
+
+%.gif:D:%.pic
+	pic $stem.pic | troff | lp -dstdout | ps2image | crop -c 255 255 255 | togif >$stem.gif
+%.pg:V:%.pic
+	pic $stem.pic | troff | page -w
+%.pic:D:%.g
+	grap $stem.g > $target

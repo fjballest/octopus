@@ -1,0 +1,44 @@
+.TH IO 2
+.SH NAME
+readn, readfile, readdev, copy \- file reading utilities
+.SH SYNOPSIS
+.EX
+include "io.m";
+io := load Io Io->PATH;
+
+readn:	fn(fd: ref Sys->FD, buf: array of byte, n: int): int;
+readfile:	fn(fd: ref Sys->FD): array of byte;
+readdev	fn(fname: string, dflt: string): string;
+copy:	fn(dfd, sfd: ref Sys->FD): int;
+
+.EE
+.SH DESCRIPTION
+.I Io
+provides auxiliary functions used for file I/O, as a convenience.
+.PP
+.I Readn
+reads
+.I n
+bytes from the give
+.I fd
+(maybe less due to errors or EOF).
+.PP
+.I Readfile
+reads all the data availabe at
+.I fd
+and stops only when meeting EOF. This should not be used for huge files.
+.PP
+.I Copy
+copies all data yet to be read from
+.I sfd
+to
+.I dfd
+and returns the number of bytes copied.
+.PP
+.I Readdev
+is used to read strings from device files. It read the contents and
+removes the trailing newline (if any) and returns the string just read or
+.I dflt
+upon errors.
+.SH SOURCE
+.B /usr/octopus/port/lib/io.b

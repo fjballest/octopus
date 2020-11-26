@@ -1,0 +1,149 @@
+.TH TBLKS 2
+.SH NAME
+tblks \- text data blocks
+.SH SYNOPSIS
+.EX
+include "tblks.m";
+tblks := load Tblks Tblks->PATH;
+
+Str:	adt {
+	s: string;
+	findr:	fn(s: self ref Str, pos: int, c: int, lim: int): int;
+	find:	fn(s: self ref Str, pos: int, c: int, lim: int): int;
+};
+
+Tblk:	adt {
+	b:	array of ref Str;
+	new:	fn(s: string): ref Tblk;
+	pack:	fn(blks: self ref Tblk): ref Str;
+	ins:	fn(blks: self ref Tblk, s: string, pos: int);
+	del:	fn(blks: self ref Tblk, n: int, pos: int): string;
+	seek:	fn(blks: self ref Tblk, pos: int): (int, int);	# (index in b, off in Str)
+	blen:	fn(blks: self ref Tblk): int;
+	getc:	fn(blks: self ref Tblk, pos: int): int;
+	gets:	fn(blks: self ref Tblk, pos: int, nr: int): string;
+	dump:	fn(blks: self ref Tblk);
+};
+
+init:		fn(sysm: Sys, strm: String, e: Error, dbg: int);
+fixpos:		fn(pos: int, n: int): int;
+fixposins:		fn(pos: int, inspos: int, n: int): int;
+fixposdel:		fn(pos: int, delpos: int, n: int): int;
+strstr:		fn(s1, s2: string): int;
+strchr:		fn(s : string, c : int) : int;
+dtxt:		fn(s: string): string;
+.EE
+.SH DESCRIPTION
+.I Tblks
+provides support for text handling. The
+.B Tblk
+data type represents text. It is organized as an array of strings,
+.BR Tblk.b ,
+making up
+the whole text. To avoid too much string copying, an auxiliary
+.B Str
+data type is used to keep references to strings.
+.PP
+.I Init
+should be called before using the module. It receives pointers to
+auxiliary modules loaded by the client program
+including
+.IR sys (2),
+.IR string (2),
+and
+.IR error (2).
+.PP
+.I Tblk.new
+creates a new
+.B Tblk
+and returns a reference to it. The argument
+.I s
+represents initial contents for the text.
+.PP
+.I Tblk.pack
+packs all the strings in a single
+.BR Str .
+After calling
+.I pack
+the single string (returned by the function) can be used to operate on
+the text using standard Limbo utilities. Various functions from the module
+may call
+.I pack
+when convenient.
+.PP
+.I Tblk.ins
+inserts
+.I s
+at
+.I pos
+in the text;
+.I Tblk.del
+deletes
+.I n
+runes starting at
+.I pos
+in the text (it returns the deleted string).
+.PP
+.I Tblk.seek
+translates a position
+.I pos
+into a couple of indexes: one locating the string
+in
+.B Tblk.b
+containing the position; another locating the rune
+within that string.
+.PP
+.I Tblk.len
+returns the number of runes in the text.
+.PP
+.I Tblk.getc
+returns a single rune at
+.I pos
+from the text and
+.I Tblk.gets
+returns a substring starting at
+.I pos
+and consisting of
+.I nr
+runes.
+.PP
+The auxiliary
+.I Str.find
+and
+.I Str.findr
+may be used to locate a rune
+.I c
+in the string given, not passing
+.I lim
+runes.
+.PP
+Other auxiliary functions like
+.I strchr
+and
+.I strstr
+are provided by the module for compatibility.
+.PP
+.I Fixpos
+ensures that
+.I n
+is in range (adjusting it if needed).
+.I Fixposins
+adjusts
+.I pos
+assuming that
+.I n
+runes have been inserted at
+.I inspos
+so that
+it refers to the same (relative) place in the text.
+.I Fixposdel
+is similar but adjusts for deletions.
+.PP
+.I Dtxt
+returns a short string useful to print any string for debugging.
+.SH EXAMPLE
+See the source for
+.IR olive (1)
+as an example of use.
+.SH SOURCE
+.B /usr/octopus/port/lib/tblks.b

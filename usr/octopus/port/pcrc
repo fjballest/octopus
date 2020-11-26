@@ -1,0 +1,77 @@
+#!/dis/sh -n
+
+# Start script for octopus PC
+
+load std
+load expr
+dom=lsub.org
+sysname=`{cat /dev/sysname}
+user=`{cat /dev/user}
+home=/usr/$user
+log=/n/log/octopus
+bind -c /dis/o /dis/o
+bind -ac /dis/o/$emuhost /dis/o
+ndb/dns
+ndb/cs
+or {ftest -f /keydb/signerkey} {echo 'auth: need to use createsignerkey(8)' >[1=2]; exit nosignerkey}
+or {ftest -f /keydb/keys} {echo 'auth: need to create /keydb/keys' >[1=2]; exit nokeys}
+auth/keyfs -n /keydb/nvr
+
+PC=`{ndb/query sys pc dom}
+if { ~ $#PC 0 } {
+	echo no entry for pc found at ndb
+}
+mkdir -p /pc /terms /pc/^(registry what who ui ports music terms snarf)
+mkdir -p /mnt/^(view print voice audio registry ports ui what who empty fs snarf)
+mkdir -p $home/lib/snarf && chmod o-rx $home/lib/snarf
+touch $home/lib/snarf/buffer $home/lib/snarf/sel
+mkdir -p /tmp/cache
+mkdir -p /term/^(view print voice fs)
+
+echo starting octopus PC $PC >>[2]$log
+listen -v -t -A 'tcp!*!inflogin' {auth/logind>>[2]$log& }
+listen -v -t -A 'tcp!*!infkey' {auth/keysrv>>[2]$log&}
+listen -v -t -A 'tcp!*!infsigner' {auth/signer>>[2]$log&}
+listen -v -t -A 'tcp!*!infcsigner' {auth/countersigner>>[2]$log&}
+
+# Basic services not depending on anything
+# may be started here, inherited and exported via startns
+
+bind -c /n/planb/what /pc/what >[2]/dev/null
+bind -c /n/planb/who /pc/who >[2]/dev/null
+bind -c /pc/what /mnt/what
+bind -c /pc/who /mnt/who
+bind -c /n/music /pc/music >[2]/dev/null
+bind -c /n/main/mail /pc/mail >[2]/dev/null
+
+o/pcns	# separate, PC, name space. This is the octopus.
+
+# The "terminal" software at the  PC imports the central
+# name space and then starts o/x and any initial application.
+# All terminals rely on o/x to run software on its name space.
+sysname=pc
+o/termns		# build a terminal name space for the PC
+o/snarf
+bind -c /pc/terms /mnt/terms
+o/mux -m /mnt/view name view loc '$user'
+o/mux -m /mnt/voice name voice loc '$user'
+o/mux -m /mnt/print name print loc '$user'
+if { ~ $emuhost Plan9 } {
+	bind -c '#₪' /srv
+	9srvfs pc / &
+	test -e /srv/cmdfs && mount -9 /srv/cmdfs /n/cmd
+} 
+bind -c '#U*' /mnt/fs
+if{ ~ $emuhost  Plan9} {
+	bind -c /pc/terms /mnt/fs/mnt/terms
+	bind -c /mnt/view /mnt/fs/mnt/view
+	bind -c /mnt/voice /mnt/fs/mnt/voice
+	bind -c /mnt/print /mnt/fs/mnt/print
+	bind -c /mnt/ui /mnt/fs/mnt/ui
+	o/x -9np
+	o/open
+} {
+	o/x -p
+}
+date
+

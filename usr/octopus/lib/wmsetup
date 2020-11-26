@@ -1,0 +1,27 @@
+#/dis/sh
+load std
+bind -c '#U*' /n/local
+bind /n/local/dev/snarf /chan/snarf
+tabstop=8
+
+OCTOPUS=/usr/octopus
+PC=yourpcsystemname
+location=home
+
+sblpath=($OCTOPUS/port/dis/o $OCTOPUS/port/dis/o)
+x=`{cat /dev/sysname}
+echo sysname is $x
+font=/fonts/charon/plain.normal.font
+if { ~ $x  $yourpcsystemname } {
+	echo running PCRC
+	wm/sh
+	o/pcrc
+} {
+	echo running TERMRC
+	if {~ $x someothermachine } {
+		location=someotherlocation
+		o/termrc
+	} {
+		o/termrc
+	}
+}

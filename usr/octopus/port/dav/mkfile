@@ -1,0 +1,25 @@
+TARG=\
+	dav.dis\
+	msgs.dis\
+	svc.dis\
+	xmlutil.dis\
+	dlock.dis\
+
+MAIN=dav
+
+MODULES=\
+	msgs.m\
+	svc.m\
+	dat.m\
+	xmlutil.m\
+	dlock.m\
+
+SYSMODULES=\
+	../../module/error.m\
+	../../module/netutil.m\
+
+
+DISBIN=/dis/o/dav
+
+<../mkdis
+<../mkdismain

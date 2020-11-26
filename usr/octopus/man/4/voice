@@ -1,0 +1,46 @@
+.TH VOICE 4
+.SH NAME
+voice \- voice output file system
+.SH SYNOPSIS
+.B o/voice
+[
+.B -abcd
+]
+[
+.B -m
+.I mnt
+]
+.B ...
+.SH DESCRIPTION
+.I Voice
+serves
+a directory with a
+.B speak
+file that can be used to speak the text written into it. The text should be clear text,
+without special punctuation symbols, or the device may be confussed.
+.PP
+It uses the host-dependent module
+.IR mvoice (2)
+to actually speak the text.
+.PP
+By default,
+.I voice
+speaks Styx using the standard input, for use with
+.IR mount (1).
+Flag
+.B -m
+can be used to ask
+.I voice
+to mount itself at
+.IR mnt .
+Options
+.B -abc
+determine the mount flag, as in
+.IR bind (1).
+Flag
+.B -d
+is used to debug the program, and makes it very verbose.
+.SH SOURCE
+.B /usr/octopus/port/voice.b
+.SH SEE ALSO
+.IR mvoice (2)

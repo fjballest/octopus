@@ -1,0 +1,20 @@
+TARG=\
+	mvoice.dis\
+	print.dis\
+	idle.dis\
+	browsercmd.dis\
+	mcamera.dis\
+
+MODULES=\
+
+SYSMODULES=\
+	error.m\
+	mvoice.m\
+	mcamera.m\
+	spooler.m\
+	os.m\
+	browsercmd.m\
+
+DISBIN=/dis/o/MacOSX
+
+<../port/mkdis

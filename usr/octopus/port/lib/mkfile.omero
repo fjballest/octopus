@@ -1,0 +1,22 @@
+TARG=\
+	op.dis\
+	opmux.dis\
+	netutil.dis\
+	error.dis\
+	io.dis\
+	xproc.dis\
+
+MODULES=\
+
+SYSMODULES=\
+	error.m\
+	netutil.m\
+	op.m\
+	opmux.m\
+	io.m\
+	xproc.m\
+
+
+DISBIN=/dis/o
+
+<../mkdis

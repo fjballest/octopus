@@ -1,0 +1,424 @@
+.TH OLIVE 1
+.SH NAME
+omero, olive \- distributed window system
+.SH SYNOPSIS
+.B o/mero
+[
+.B -abcdi
+]
+[
+.B -m
+.I mnt
+]
+.PP
+.B o/live
+[
+.B -dDEFKLMPTW
+]
+[
+.I odir
+]
+.I sdir
+.SH DESCRIPTION
+This manual page is both an introduction and
+documentation for the user interface to
+the window system. After reading it, it is suggested to read
+.IR ox (1)
+for a description of the editor and shell interface.
+.PP
+The Octopus the window system,
+.IR o/mero ,
+does not draw and does not
+interact with the user.
+.I O/mero
+implements a file tree that represents a tree of graphical panels.
+Flags
+.B -abc
+are similar to the
+.IR bind (2)
+flags of the same name. Option
+.B -m
+can be used to select
+.I mnt
+as the mount point instead of the default
+.BR /mnt/ui .
+Under flag
+.B -i
+the standard input is used as a connection to the client.
+.PP
+All user interfaces are created as subtrees of the file
+tree maintained by
+.IR o/mero .
+The graphical representation of panels in the screen corresponds to the file tree
+serviced by
+.I o/mero
+to its clients. For example, a screen that contains two rows has two corresponding
+files in its root directory. If the user moves one row within the other using the
+mouse, the same
+would happen to their respective files; and vice-versa.
+.PP
+The root of the
+.I o/mero
+file tree, mounted at
+.B /mnt/ui
+by default,
+contains a directory named
+.B appl ,
+a file named
+.B olive ,
+and
+one additional directory per screen (or session).
+A screen is a top-level panel used to keep other panels
+within. It is used to represent what is to be shown at a terminal.
+.PP
+You can refer to
+.IR omero (4)
+for a description of the window system
+and its file interface, and to
+.IR panels (2)
+for a description of the API to the window system.
+.PP
+.I O/live
+is a
+viewer that permits the user to interact with
+.IR o/mero .
+It uses a graphical terminal to display panels according to the panel
+tree supplied by
+.I o/mero
+and accepts mouse and keyboard input to operate on the panels.
+.I O/live
+is the only program that knows how to draw, how to interact with
+the mouse and the keyboard, and how to implement
+particular panel (or widget) type.
+Different user terminals mount the same
+.I o/mero
+file tree and run
+.I o/live
+to view (parts of) it.
+.PP
+The argument
+.I odir
+to
+.I o/live
+is the path to the root of the user interface tree.
+The argument
+.I sdir
+is the name of the screen (directory) to be shown by
+.IR o/live .
+It is feasible to share the
+same screen among multiple
+.IR o/lives .
+In this case, editions are synchronized among viewers when
+the mouse moves.
+Other flags shown in the synopsis activate various debug diagnostics
+and are not discussed here.
+.SS Panels
+Application interfaces are created by creating files under
+.BR /mnt/ui/appl .
+A new session may be created by creating a directory at
+.B /mnt/ui
+instead.
+.PP
+Panels are shown at one or more screens by replicating their
+files from
+.B /mnt/ui/appl
+at one or more screen subtrees. Panel replicas may be
+moved around as desired.
+Some panels exist only within a screen subtree
+(are not replicated) for layout purposes, but most are replicas.
+.PP
+There are three kind of panels: rows, columns, and atoms.  Rows and
+columns group inner panels and handle their layout.  A row arranges
+for inner panels to be disposed in a row.  A column does what can be
+expected.
+Atoms include text, images, gauges, etc.
+.IR Omero (4)
+describes the complete list.
+.PP
+Any panel may have a tag (a square near its top-left corner).  By
+default, rows and columns have tags, and atoms do not.
+When a panel has hidden panels within
+it, its tag is shown as a vertical rectangle instead of a square box.
+The vertical space below
+the tag is called the margin.
+.PP
+A panel may be in a
+.I dirty
+state, when the application using it considers that it has unsaved state. In this case,
+the tag is shown in a light green color. This happens also to any row or
+column that contains a dirty panel.
+.SS Selection
+The user selection and clipboard are maintained using files (that can be shared
+among machines). The file
+.B /mnt/snarf/sel
+contains the path to the panel whose selection changed last. The file
+.B /mnt/snarf/snarf
+is kept synchronized to the clipboard by running
+.IR snarf (1).
+.PP
+The selection determines the panel where to apply editing commands and
+the directory where to execute external commands.
+Using the left button of the mouse on a
+panel changes the selection to that panel. Note that unlike in Acme,
+a command does not apply to the file shown in the panel where the command
+has been typed, but to the last panel selected (Labels, single lines and buttons do not
+update the selection despite showing ticks and obeying selection commands).
+.SS Mouse and keyboard
+Moving the pointer to a panel arranges keyboard input to be sent to it.
+But note that command execution refers to the selection-panel, which may be a
+different one.
+Tags and margins (and not just panel contents) accept input as well, both using
+the mouse and the keyboard.
+.PP
+.I O/live
+can be used with either a two button mouse, a three button mouse, or
+a mouse with one button and some way to make a click with the second
+button. The right mouse button is always named ``button 3'', the left one is
+``button 1'', and the middle one is ``button 2''.
+In Lsub Infernos, keyboard function keys
+.LR F1 ,
+.LR F2 ,
+and
+.L F3
+act as mouse buttons 1, 2, and 3.
+.PP
+Menus show different options in a circle around the point.
+To select one you must move the pointer quickly in the direction
+of the option.
+.PP
+While the menu is shown, a click with the same button
+that raised the menu
+executes the last option selected in that menu. A click with
+a different button closes the menu without doing anything.
+.PP
+To aid touch pads, raising a menu and then drag
+with button 1 is undrestood as a drag with button 3.
+.SS Tag and margin commands
+While on a tag or margin, the mouse can be used as follows:
+.TF "Button 1
+.TP
+.B "Button 1
+A drag on a tag moves the tagged panel. 
+On rows and columns
+a small vertical or horizontal drag makes the container behave like a
+column or a row.
+A single click resizes the
+panel according to the following mouse actions: Another single click
+(i.e., a double click) adjusts the size automatically and a drag changes
+the size of the panel in proportion to the destination of the drag.
+recomputes the layout for the tagged panel. 
+.TP
+.B "Button 2
+A single click on a tag
+maximizes the panel, by hiding its siblings on the outer row or
+column containing it. If the panel is already maximized, a single
+click shows all siblings, undoing the effect.
+.TP
+.B "Button 3
+A click raises a menu with panel operations. A drag can be used
+to adjust the size of the panel.
+.PD
+.PP
+The menu shown at a tag (or margin) contains the following
+options:
+.TF Close
+.TP
+.B "Copy
+Makes the next drag copy the panel, instead of moving it.
+.TP
+.B "More
+Hide all but the first inner panel (when all were shown) or
+show one more panel (when not all were shown).
+.TP
+.B Hide
+Hides the panel.
+.TP
+.B Close
+Closes the panel (requires insisting if there are pending changes).
+To terminate
+.I o/live
+(Without actually destroying the screen, kept within
+.IR o/mero ),
+use this command on the top-left tag.
+.TP
+.B Top
+Zooms to make the panel full-screen. Zoom out to
+the original subtree when the panel is already full-screen.
+.TP
+.B Full
+Maximizes the panel by hiding siblings.
+.PD
+.PP
+While on a tag (or a margin) the following keys perform the indicated
+actions on the tagged panel:
+.TF Backspace
+.TP
+.B Delete
+Send an interrupt request to the application (or do nothing for
+layout panels).
+.TP
+.B Enter
+Zoom as needed to view the panel full-screen.
+.TP
+.B Left
+(the ``←''
+key). Zoom out one level and show the outer
+panel containing the entire screen (and probably more).
+.TP
+.B Right
+(the ``→''
+key). Zoom in one level down to the tagged panel.
+.TP
+.B Up
+(the ``↑'' key)
+Show all the inner panels, which might be hidden.
+.TP
+.B Down
+(the ``↓'' key).
+Hide all but the first inner panel (when all were shown) or
+show one more panel (when not all were shown).
+.PD
+.SS Panel commands
+While within a panel, the mouse can be used as follows:
+.TF "Button 1
+.TP
+.B "Button 1
+Can be used to change the selection and the
+insertion point. Double and triple clicks select the word at the pointer. The later
+consider characters like ``/'' to be part of the word, the former does not.
+A double click on white space selects an entire line. One at an open
+bracket (or quote, or ...) selects all the text up to the closed bracket
+(or quote, or ...).
+.TP
+.B "Button 2
+Executes the word or selection at the pointer as a command.
+The command
+.B New
+would create a new column.
+.TP
+.B "Button 3
+A single click
+with the button 3 raises a menu.
+A drag can be used to scroll up or down. The
+entire panel represents the scroll bar. Scrolling speed depends on the
+proximity of the initial drag point to the end of the panel.
+.TP
+.B Chords
+Chords similar to those used by
+.IR acme (1)
+are understood as well. They can be used to cut and paste text.
+Refer to acme's manual page for a reference.
+.PD
+.PP
+The menu for a panel contains the following commands:
+.TF Close
+.TP
+.B Open
+Opens the file whose name is the word or selection at point.
+(To create a new file use the
+.B B
+command from the editing language).
+.TP
+.B Close
+Closes the panel. If it is dirty it may be necessary to insist by
+repeating the action.
+To terminate
+.I o/live
+(Without actually destroying the screen, kept within
+.IR o/mero ),
+use this command on the top-level panel.
+.TP
+.B Write
+Writes changes made to the panel. On text panel this means
+writing the edited text back to the file server.
+.TP
+.B Exec
+Executes the command whose name is the word or selection at point.
+.TP
+.B Find
+Searches the panel to find the text at point.
+.TP
+.B Paste
+Inserts the contents of the clipboard at point. (To ``cut'' some text,
+use the backspace on a selection).
+.PD
+.PP
+While on a panel, the following keys have special meaning:
+.TF Backspace
+.TP
+.B Delete
+Send an interrupt request to the application.
+.TP
+.B Esc
+Select the text typed from the last mouse click.
+.TP
+.B Enter
+Execute the command typed from the last mouse click.
+.TP
+.B Backspace
+When the selection is null, delete last character. Otherwise,
+remove the selected text and copy its contents to the
+clipboard(i.e., ``cut'').
+.TP
+.B ^U
+(
+.B Control
+and
+.BR U ).
+Delete last word.
+.TP
+.B Insert
+Paste the text in the clipboard.
+.TP
+.B Left
+(the ``←''
+key). Undo.
+.TP
+.B Right
+(the ``→''
+key). Redo.
+.TP
+.B Up
+(the ``↑'' key)
+Scroll up.
+.TP
+.B Down
+(the ``↓'' key).
+Scroll down.
+.PD
+.SH EXAMPLE
+Start the window system and a single viewer on it:
+.EX
+# create mount points if they do not exist
+% mkdir -p /mnt/ui /mnt/ports
+# start the event delivery service
+% o/ports
+# start the window system
+% o/mero
+# create a screen/session
+% mkdir /mnt/ui/s0
+# start the shell and browser
+% o/x
+# open a viewer for s0
+% o/live s0
+.EE
+After exiting
+.I Olive
+you may run it again to see your session as it was.
+.SH SOURCE
+.B /usr/octopus/port/live
+.br
+.B /usr/octopus/port/mero
+.SH SEE ALSO
+.IR ox (1),
+.IR ports (4),
+.IR panels (2),
+.IR omero (4),
+and
+.IR snarf (1).
+.SH BUGS
+Under certain circumstances Olive may report
+a concurrent edition  when that is not the case. The only way
+out from this is to use the menu at the tag to close the panel and
+then reopen it again. This will be fixed soon.
+
